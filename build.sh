@@ -12,3 +12,4 @@ cmake ..
 
 make
 
+echo '... Done!'
