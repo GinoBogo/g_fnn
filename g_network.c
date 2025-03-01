@@ -8,9 +8,11 @@
 
 #include "g_network.h"
 
+#include <assert.h> // assert
 #include <stdlib.h> // NULL, calloc, free
 
 static void __unsafe_reset(g_network_t *self) {
+    assert(self != NULL);
     // variables
     self->data       = NULL;
     self->layers.ptr = NULL;
