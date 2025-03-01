@@ -8,12 +8,14 @@
 
 #include "g_layer.h"
 
+#include <assert.h> // assert
 #include <math.h>   // expf
 #include <stdlib.h> // NULL, calloc, free
 
 #include "g_neuron.h"
 
 static void __unsafe_reset(g_layer_t *self) {
+    assert(self != NULL);
     // variables
     self->data        = NULL;
     self->l_id        = -1;
