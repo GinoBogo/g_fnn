@@ -8,6 +8,7 @@
 
 #include "g_neuron.h"
 
+#include <assert.h> // assert
 #include <math.h>   // expf, tanhf
 #include <stdlib.h> // NULL
 
@@ -103,6 +104,7 @@ static void __af_softmax(g_layer_data_t *data, int n_id) {
 }
 
 static void __unsafe_reset(g_neuron_t *self) {
+    assert(self != NULL);
     // variables
     self->data = NULL;
     self->n_id = -1;
