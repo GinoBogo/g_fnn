@@ -4,24 +4,22 @@
 
 ### Inputs of the $j$-th neuron:
 
-1. $\ \ \ \ x_{ij}^{(k)} = y_{i}^{(k-1)}$
+(1) $\ \ \ \ x_{ij}^{(k)} = y_{i}^{(k-1)}$
 
 where:
 
 - $0 \leq i \lt P_{k-1}$
-
 - $0 \leq j \lt P_{k}$
 
 and:
 
 - $P_{k}$ is the number of neurons in layer $k$
-
 - $P_{k-1}$ is the number of neurons in layer $k-1$
 
 
 ### Output of the $j$-th neuron:
 
-2. $\ \ \ \ y_{j}^{(k)} = g^{k}(z_{j}^{(k)})$
+(2) $\ \ \ \ y_{j}^{(k)} = g^{k}(z_{j}^{(k)})$
 
 where:
 
@@ -29,4 +27,8 @@ where:
 
 and:
 
-3. $\ \ \ \ z_{j}^{(k)} = \sum_{i=0}^{P_{k}-1} w_{ij}^{(k)} \cdot x_{ij}^{(k)} + b_{j}^{(k)}$
+(3) $\ \ \ \ z_{j}^{(k)} = \sum_{i=0}^{P_{k}-1} w_{ij}^{(k)} \cdot x_{ij}^{(k)} + b_{j}^{(k)}$
+
+Using (1) in (3) and writing the **bias** $b_{j}^{(k)}$ as neuron's weight $w_{P_{k}j}^{(k)}$:
+
+(4) $\ \ \ \ z_{j}^{(k)} = \sum_{i=0}^{P_{k}-1} w_{ij}^{(k)} \cdot y_{i}^{(k-1)} + w_{P_{k}j}^{(k)} \cdot 1$
