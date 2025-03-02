@@ -1,5 +1,7 @@
 # Feed-forward Neural Network
 
+![Neurons Connection](./resources/images/g_ffn_fig00.png)
+
 ### Inputs of the $j$-th neuron:
 
 1. $\ \ \ \ x_{ij}^{(k)} = y_{i}^{(k-1)}$
