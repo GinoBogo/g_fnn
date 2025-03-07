@@ -37,6 +37,10 @@ static void __af_linear(g_layer_data_t *data, int n_id) {
     float *Y = &data->y.ptr[n_id];
 
     *Y = *Z;
+
+    float *dY_dZ = &data->dy_dz.ptr[n_id];
+
+    *dY_dZ = 1.0;
 }
 
 static void __af_tanh(g_layer_data_t *data, int n_id) {
@@ -44,6 +48,10 @@ static void __af_tanh(g_layer_data_t *data, int n_id) {
     float *Y = &data->y.ptr[n_id];
 
     *Y = tanhf(*Z);
+
+    float *dY_dZ = &data->dy_dz.ptr[n_id];
+
+    *dY_dZ = 1.0 - ((*Y) * (*Y));
 }
 
 static void __af_relu(g_layer_data_t *data, int n_id) {
@@ -51,6 +59,10 @@ static void __af_relu(g_layer_data_t *data, int n_id) {
     float *Y = &data->y.ptr[n_id];
 
     *Y = *Z > 0.0 ? *Z : 0.0;
+
+    float *dY_dZ = &data->dy_dz.ptr[n_id];
+
+    *dY_dZ = *Z > 0.0 ? 1.0 : 0.0;
 }
 
 static void __af_leaky_relu(g_layer_data_t *data, int n_id) {
@@ -59,23 +71,37 @@ static void __af_leaky_relu(g_layer_data_t *data, int n_id) {
 
     const float alpha = data->af_args.ptr[0];
 
-    *Y = *Z > 0.0 ? *Z : alpha * *Z;
+    *Y = *Z > 0.0 ? *Z : alpha * (*Z);
+
+    float *dY_dZ = &data->dy_dz.ptr[n_id];
+
+    *dY_dZ = *Z > 0.0 ? alpha : 0.0;
 }
 
 static void __af_prelu(g_layer_data_t *data, int n_id) {
     float *Z = &data->z.ptr[n_id];
     float *Y = &data->y.ptr[n_id];
 
-    const float alpha = data->af_args.ptr[n_id];
+    const float beta = data->af_args.ptr[n_id];
 
-    *Y = *Z > 0.0 ? *Z : alpha * *Z;
+    *Y = *Z > 0.0 ? *Z : beta * (*Z);
+
+    float *dY_dZ = &data->dy_dz.ptr[n_id];
+
+    *dY_dZ = *Z > 0.0 ? beta : 0.0;
 }
 
 static void __af_swish(g_layer_data_t *data, int n_id) {
     float *Z = &data->z.ptr[n_id];
     float *Y = &data->y.ptr[n_id];
 
-    *Y = *Z * (1.0 / (1.0 + expf(-*Z)));
+    const float sigma = 1.0 / (1.0 + expf(-(*Z)));
+
+    *Y = (*Z) * sigma;
+
+    float *dY_dZ = &data->dy_dz.ptr[n_id];
+
+    *dY_dZ = (*Y) + sigma * (1.0 - (*Y));
 }
 
 static void __af_elu(g_layer_data_t *data, int n_id) {
@@ -85,13 +111,21 @@ static void __af_elu(g_layer_data_t *data, int n_id) {
     const float alpha = data->af_args.ptr[0];
 
     *Y = *Z > 0.0 ? *Z : alpha * (expf(*Z) - 1.0);
+
+    float *dY_dZ = &data->dy_dz.ptr[n_id];
+
+    *dY_dZ = *Z > 0.0 ? 1.0 : (*Y) + alpha;
 }
 
 static void __af_sigmoid(g_layer_data_t *data, int n_id) {
     float *Z = &data->z.ptr[n_id];
     float *Y = &data->y.ptr[n_id];
 
-    *Y = 1.0 / (1.0 + expf(-*Z));
+    *Y = 1.0 / (1.0 + expf(-(*Z)));
+
+    float *dY_dZ = &data->dy_dz.ptr[n_id];
+
+    *dY_dZ = (*Y) * (1.0 - (*Y));
 }
 
 static void __af_softmax(g_layer_data_t *data, int n_id) {
@@ -101,6 +135,12 @@ static void __af_softmax(g_layer_data_t *data, int n_id) {
     const float sum_exp = data->af_args.ptr[0];
 
     *Y = expf(*Z) / sum_exp;
+
+    float *dY_dZ = &data->dy_dz.ptr[n_id];
+
+    const float sigma = 1.0 / (1.0 + expf(-(*Z)));
+
+    *dY_dZ = sigma * (1.0 - sigma);
 }
 
 static void __unsafe_reset(g_neuron_t *self) {
