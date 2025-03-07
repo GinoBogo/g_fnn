@@ -48,6 +48,10 @@ static bool Create(struct g_layer_t *self, g_layer_data_t *data, int l_id) {
                 g_neuron_link(neuron);
 
                 rvalue &= neuron->Create(neuron, data, i);
+
+                if (!rvalue) {
+                    break; // exit loop if neuron creation fails
+                }
             }
         }
 
@@ -123,6 +127,7 @@ void g_layer_link(g_layer_t *self) {
 
 void g_layer_data_reset(g_layer_data_t *data) {
     if (data != NULL) {
+        // forward propagation
         data->x.ptr = NULL;
         data->x.len = 0;
         data->w.ptr = NULL;
@@ -132,6 +137,12 @@ void g_layer_data_reset(g_layer_data_t *data) {
         data->z.len = 0;
         data->y.ptr = NULL;
         data->y.len = 0;
+
+        // backward propagation
+        data->dy_dz.ptr = NULL;
+        data->dy_dz.len = 0;
+        data->de_dy.ptr = NULL;
+        data->de_dy.len = 0;
 
         data->af_type     = UNKNOWN;
         data->af_call     = NULL;
