@@ -87,14 +87,14 @@ Some of the most commonly used Activation Functions and their layer-by-layer app
 
 | Name | Expression | Derivative |
 |--|-----|-----|
-| LINEAR | $g(x) = x$ | $g'(x) = 1$ |
-| TANH | $g(x) = \tanh(x)$ | $g'(x) = 1 - \tanh^2(x)$ |
-| RELU | $g(x) = \max(0, x)$ | $g'(x) = 0 \ \ \ \ \text{if } x \leq 0; \ \ \ \ g'(x) = 1 \ \ \ \ \text{if } x > 0$ |
-| LEAKY_RELU | $g(x) = \alpha x \ \ \ \ \text{if } x \leq 0; \ \ \ \ g(x) = x  \ \ \ \ \text{if } x > 0$ | $g'(x) = \alpha \ \ \ \ \text{if } x \leq 0; \ \ \ \ g'(x) = 1 \ \ \ \ \text{if } x > 0$ |
-| PRELU | $g(x) = \beta x \ \ \ \ \text{if } x \leq 0; \ \ \ \ g(x) = x \ \ \ \ \text{if } x > 0$ | $g'(x) = \beta \ \ \ \ \text{if } x \leq 0; \ \ \ \ g'(x) = 1 \ \ \ \ \text{if } x > 0$ |
-| SWISH | $g(x) = x \cdot \sigma(x)$ | $g'(x) = g(x) + \sigma(x) (1 - g(x))$ |
-| ELU | $g(x) = \alpha (e^x - 1) \ \ \ \ \text{if } x \leq 0; \ \ \ \ g(x) = x \ \ \ \ \text{if } x > 0$ | $g'(x) = g(x) + \alpha \ \ \ \ \text{if } x \leq 0; \ \ \ \ g'(x) = 1 \ \ \ \ \text{if } x > 0$ |
-| SIGMOID | $g(x) = \sigma(x) = \frac{1}{1 + e^{-x}}$ | $g'(x) = \sigma(x) (1 - \sigma(x))$ |
-| SOFTMAX | $g_i(x) = \frac{e^{x_i}}{\sum_j e^{x_j}}$ | $g'_i(x) = \sigma_i(x) (1 - \sigma_i(x))$ |
+| LINEAR | $g(z) = z$ | $g'(z) = 1$ |
+| TANH | $g(z) = \tanh(z)$ | $g'(z) = 1 - \tanh^2(z)$ |
+| RELU | $g(z) = \max(0, z)$ | $g'(z) = 0 \ \ \ \ \text{if } z \leq 0; \ \ \ \ g'(z) = 1 \ \ \ \ \text{if } z > 0$ |
+| LEAKY_RELU | $g(z) = \alpha z \ \ \ \ \text{if } z \leq 0; \ \ \ \ g(z) = z  \ \ \ \ \text{if } z > 0$ | $g'(z) = \alpha \ \ \ \ \text{if } z \leq 0; \ \ \ \ g'(z) = 1 \ \ \ \ \text{if } z > 0$ |
+| PRELU | $g(z) = \beta z \ \ \ \ \text{if } z \leq 0; \ \ \ \ g(z) = z \ \ \ \ \text{if } z > 0$ | $g'(z) = \beta \ \ \ \ \text{if } z \leq 0; \ \ \ \ g'(z) = 1 \ \ \ \ \text{if } z > 0$ |
+| SWISH | $g(z) = z \cdot \sigma(z)$ | $g'(z) = g(z) + \sigma(z) [1 - g(z)]$ |
+| ELU | $g(z) = \alpha (e^z - 1) \ \ \ \ \text{if } z \leq 0; \ \ \ \ g(z) = z \ \ \ \ \text{if } z > 0$ | $g'(z) = g(z) + \alpha \ \ \ \ \text{if } z \leq 0; \ \ \ \ g'(z) = 1 \ \ \ \ \text{if } z > 0$ |
+| SIGMOID | $g(z) = \sigma(z) = \frac{1}{1 + e^{-z}}$ | $g'(z) = \sigma(z) [1 - \sigma(z)]$ |
+| SOFTMAX | $g_i(z) = \frac{e^{z_i}}{\sum_j e^{z_j}}$ | $g'_i(z) = \sigma_i(z) [1 - \sigma_i(z)]$ |
 
 Leaky ReLU and PReLU look identical at first, but Leaky ReLU uses a fixed small slope ($\alpha$, typically 0.01) for negative values, while PReLU learns the slope ($\beta$) during training, providing more flexibility.
