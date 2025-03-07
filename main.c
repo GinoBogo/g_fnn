@@ -10,7 +10,7 @@
 
 #include "g_network.h"
 
-#define SIZEOF(x) (sizeof(x) / sizeof(x[0]))
+#define SIZEOF(x) ((int)(sizeof(x) / sizeof(x[0])))
 
 // -----------------------------------------------------------------------------
 
@@ -18,29 +18,39 @@ int main(int argc, char *argv[]) {
     (void)argc;
     (void)argv;
 
+    // input layer (output values)
     float L00_X[7];
 
+    // hidden layer 1
     float             L00_W[20][8];
     float             L00_Z[20];
     float             L00_Y[20];
+    float             L00_dY_dZ[20];
+    float             L00_dE_dY[20];
     g_act_func_type_t L00_AF_TYPE    = LEAKY_RELU;
     float             L00_AF_ARGS[1] = {0.001};
 
+    // hidden layer 2
     float             L01_W[20][21];
     float             L01_Z[20];
     float             L01_Y[20];
+    float             L01_dY_dZ[20];
+    float             L01_dE_dY[20];
     g_act_func_type_t L01_AF_TYPE    = LEAKY_RELU;
     float             L01_AF_ARGS[1] = {0.001};
 
+    // output layer
     float             L02_W[10][21];
     float             L02_Z[10];
     float             L02_Y[10];
+    float             L02_dY_dZ[10];
+    float             L02_dE_dY[10];
     g_act_func_type_t L02_AF_TYPE    = SIGMOID;
     float             L02_AF_ARGS[1] = {0.0};
 
     g_layer_data_t layer_data[3];
 
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < SIZEOF(layer_data); ++i) {
         g_layer_data_reset(&layer_data[i]);
     }
 
@@ -53,6 +63,10 @@ int main(int argc, char *argv[]) {
     layer_data[0].z.len       = SIZEOF(L00_Z);
     layer_data[0].y.ptr       = L00_Y;
     layer_data[0].y.len       = SIZEOF(L00_Y);
+    layer_data[0].dy_dz.ptr   = L00_dY_dZ;
+    layer_data[0].dy_dz.len   = SIZEOF(L00_dY_dZ);
+    layer_data[0].de_dy.ptr   = L00_dE_dY;
+    layer_data[0].de_dy.len   = SIZEOF(L00_dE_dY);
     layer_data[0].af_type     = L00_AF_TYPE;
     layer_data[0].af_args.ptr = L00_AF_ARGS;
     layer_data[0].af_args.len = SIZEOF(L00_AF_ARGS);
@@ -66,6 +80,10 @@ int main(int argc, char *argv[]) {
     layer_data[1].z.len       = SIZEOF(L01_Z);
     layer_data[1].y.ptr       = L01_Y;
     layer_data[1].y.len       = SIZEOF(L01_Y);
+    layer_data[1].dy_dz.ptr   = L01_dY_dZ;
+    layer_data[1].dy_dz.len   = SIZEOF(L01_dY_dZ);
+    layer_data[1].de_dy.ptr   = L01_dE_dY;
+    layer_data[1].de_dy.len   = SIZEOF(L01_dE_dY);
     layer_data[1].af_type     = L01_AF_TYPE;
     layer_data[1].af_args.ptr = L01_AF_ARGS;
     layer_data[1].af_args.len = SIZEOF(L01_AF_ARGS);
@@ -79,6 +97,10 @@ int main(int argc, char *argv[]) {
     layer_data[2].z.len       = SIZEOF(L02_Z);
     layer_data[2].y.ptr       = L02_Y;
     layer_data[2].y.len       = SIZEOF(L02_Y);
+    layer_data[2].dy_dz.ptr   = L02_dY_dZ;
+    layer_data[2].dy_dz.len   = SIZEOF(L02_dY_dZ);
+    layer_data[2].de_dy.ptr   = L02_dE_dY;
+    layer_data[2].de_dy.len   = SIZEOF(L02_dE_dY);
     layer_data[2].af_type     = L02_AF_TYPE;
     layer_data[2].af_args.ptr = L02_AF_ARGS;
     layer_data[2].af_args.len = SIZEOF(L02_AF_ARGS);
@@ -93,6 +115,7 @@ int main(int argc, char *argv[]) {
     g_network_link(&network);
 
     if (network.Create(&network, &layers_data)) {
+        // TODO: load input data
         network.Step_Fwd(&network);
     }
 
