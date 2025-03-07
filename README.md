@@ -87,14 +87,14 @@ Some of the most commonly used Activation Functions and their layer-by-layer app
 
 | Name | Expression | Derivative |
 |--|-----|-----|
-| LINEAR | $$g(x) = x$$ | $$g'(x) = 1$$ |
-| TANH | $$g(x) = \tanh(x)$$ | $$g'(x) = 1 - \tanh^2(x)$$ |
-| RELU | $$g(x) = \max(0, x)$$ | $$g'(x) = \begin{cases} 0 & \text{if } x \leq 0 \\ 1 & \text{if } x > 0 \end{cases}$$ |
-| LEAKY_RELU | $$g(x) = \begin{cases} \alpha x & \text{if } x \leq 0 \\ x & \text{if } x > 0 \end{cases}$$ | $$g'(x) = \begin{cases} \alpha & \text{if } x \leq 0 \\ 1 & \text{if } x > 0 \end{cases}$$ |
-| PRELU | $$g(x) = \begin{cases} \beta x & \text{if } x \leq 0 \\ x & \text{if } x > 0 \end{cases}$$ | $$g'(x) = \begin{cases} \beta & \text{if } x \leq 0 \\ 1 & \text{if } x > 0 \end{cases}$$ |
-| SWISH | $$g(x) = x \cdot \sigma(x)$$ | $$g'(x) = g(x) + \sigma(x) (1 - g(x))$$ |
-| ELU | $$g(x) = \begin{cases} \alpha (e^x - 1) & \text{if } x \leq 0 \\ x & \text{if } x > 0 \end{cases}$$ | $$g'(x) = \begin{cases} g(x) + \alpha & \text{if } x \leq 0 \\ 1 & \text{if } x > 0 \end{cases}$$ |
-| SIGMOID | $$g(x) = \sigma(x) = \frac{1}{1 + e^{-x}}$$ | $$g'(x) = \sigma(x) (1 - \sigma(x))$$ |
-| SOFTMAX | $$g_i(x) = \frac{e^{x_i}}{\sum_j e^{x_j}}$$ | $$g'_i(x) = \sigma_i(x) (1 - \sigma_i(x))$$ |
+| LINEAR | $g(x) = x$ | $g'(x) = 1$ |
+| TANH | $g(x) = \tanh(x)$ | $g'(x) = 1 - \tanh^2(x)$ |
+| RELU | $g(x) = \max(0, x)$ | $g'(x) = 0 \ \ \ \ \text{if } x \leq 0; \ \ \ \ g'(x) = 1 \ \ \ \ \text{if } x > 0$ |
+| LEAKY_RELU | $g(x) = \alpha x \ \ \ \ \text{if } x \leq 0; \ \ \ \ g(x) = x  \ \ \ \ \text{if } x > 0$ | $g'(x) = \alpha \ \ \ \ \text{if } x \leq 0; \ \ \ \ g'(x) = 1 \ \ \ \ \text{if } x > 0$ |
+| PRELU | $g(x) = \beta x \ \ \ \ \text{if } x \leq 0; \ \ \ \ g(x) = x \ \ \ \ \text{if } x > 0$ | $g'(x) = \beta \ \ \ \ \text{if } x \leq 0; \ \ \ \ g'(x) = 1 \ \ \ \ \text{if } x > 0$ |
+| SWISH | $g(x) = x \cdot \sigma(x)$ | $g'(x) = g(x) + \sigma(x) (1 - g(x))$ |
+| ELU | $g(x) = \alpha (e^x - 1) \ \ \ \ \text{if } x \leq 0; \ \ \ \ g(x) = x \ \ \ \ \text{if } x > 0$ | $g'(x) = g(x) + \alpha \ \ \ \ \text{if } x \leq 0; \ \ \ \ g'(x) = 1 \ \ \ \ \text{if } x > 0$ |
+| SIGMOID | $g(x) = \sigma(x) = \frac{1}{1 + e^{-x}}$ | $g'(x) = \sigma(x) (1 - \sigma(x))$ |
+| SOFTMAX | $g_i(x) = \frac{e^{x_i}}{\sum_j e^{x_j}}$ | $g'_i(x) = \sigma_i(x) (1 - \sigma_i(x))$ |
 
 Leaky ReLU and PReLU look identical at first, but Leaky ReLU uses a fixed small slope ($\alpha$, typically 0.01) for negative values, while PReLU learns the slope ($\beta$) during training, providing more flexibility.
