@@ -85,7 +85,9 @@ Some of the most commonly used Activation Functions and their layer-by-layer app
 | SIGMOID    | for output layer (binary classification)     |
 | SOFTMAX    | for output layer (multi-class classification)|
 
-| Name | Expression | Derivative |
+Overview of the above-mentioned Activation Functions: definitions and derivatives for use in neural networks.
+
+| Name | Definition | Derivative |
 |--|-----|-----|
 | LINEAR | $g(z) = z$ | $g'(z) = 1$ |
 | TANH | $g(z) = \tanh(z)$ | $g'(z) = 1 - \tanh^2(z)$ |
