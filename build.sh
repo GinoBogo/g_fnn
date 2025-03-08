@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 clear
 
 if [ ! -d "build" ]; then
@@ -8,7 +10,7 @@ fi
 
 cd ./build
 
-cmake ..
+cmake ".."
 
 make
 

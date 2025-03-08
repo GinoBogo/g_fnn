@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 clear
 
 if [ -d "build" ]; then
@@ -7,3 +9,4 @@ if [ -d "build" ]; then
 fi
 
 echo '... Done!'
+
