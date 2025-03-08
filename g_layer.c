@@ -158,15 +158,32 @@ bool g_layer_data_check(g_layer_data_t *data, int l_id) {
 
     if (data != NULL) {
         rvalue |= l_id >= 0;
+        // forward propagation
         rvalue &= data->x.ptr != NULL;
         rvalue &= data->w.ptr != NULL;
         rvalue &= data->z.ptr != NULL;
         rvalue &= data->y.ptr != NULL;
 
+        // backward propagation
+        rvalue &= data->dy_dz.ptr != NULL;
+        rvalue &= data->de_dy.ptr != NULL;
+
         if (rvalue) {
+            // forward propagation
             rvalue &= data->x.ptr != data->z.ptr;
             rvalue &= data->x.ptr != data->y.ptr;
             rvalue &= data->z.ptr != data->y.ptr;
+
+            // backward propagation
+            rvalue &= data->dy_dz.ptr != data->de_dy.ptr;
+
+            rvalue &= data->dy_dz.ptr != data->x.ptr;
+            rvalue &= data->dy_dz.ptr != data->z.ptr;
+            rvalue &= data->dy_dz.ptr != data->y.ptr;
+
+            rvalue &= data->de_dy.ptr != data->x.ptr;
+            rvalue &= data->de_dy.ptr != data->z.ptr;
+            rvalue &= data->de_dy.ptr != data->y.ptr;
         }
 
         if (rvalue) {
@@ -176,17 +193,28 @@ bool g_layer_data_check(g_layer_data_t *data, int l_id) {
                 float *data__w_ptr = f_matrix_row(&data->w, i);
 
                 rvalue &= data__w_ptr != NULL;
+
+                // forward propagation
                 rvalue &= data__w_ptr != data->x.ptr;
                 rvalue &= data__w_ptr != data->z.ptr;
                 rvalue &= data__w_ptr != data->y.ptr;
+
+                // backward propagation
+                rvalue &= data__w_ptr != data->dy_dz.ptr;
+                rvalue &= data__w_ptr != data->de_dy.ptr;
             }
         }
 
         if (rvalue) {
+            // forward propagation 
             rvalue &= data->x.len > 0;
             rvalue &= data->w.col == data->x.len + 1;
-            rvalue &= data->w.row == data->y.len;
             rvalue &= data->w.row == data->z.len;
+            rvalue &= data->w.row == data->y.len;
+
+            // backward propagation
+            rvalue &= data->dy_dz.len == data->z.len;
+            rvalue &= data->de_dy.len == data->y.len;
         }
     }
 
