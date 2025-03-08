@@ -47,6 +47,10 @@ static bool Create(struct g_network_t *self, g_layers_data_t *data) {
                 g_layer_link(layer);
 
                 rvalue &= layer->Create(layer, layer_data, l);
+
+                if (!rvalue) {
+                    break; // exit loop if neuron creation fails
+                }
             }
         }
 
