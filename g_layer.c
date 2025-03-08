@@ -99,8 +99,10 @@ static void Step_Fwd(struct g_layer_t *self) {
         if (neuron->data->af_type == SOFTMAX) {
             float sum_exp = 0.0;
 
+            const float *Z = neuron->data->z.ptr;
+
             for (int i = 0; i < N; ++i) {
-                sum_exp += expf(neuron->data->z.ptr[i]);
+                sum_exp += expf(Z[i]);
             }
 
             neuron->data->af_args.ptr[0] = sum_exp;
