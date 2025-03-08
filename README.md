@@ -100,3 +100,50 @@ Overview of the above-mentioned Activation Functions: definitions and derivative
 | SOFTMAX | $g_i(z) = \frac{e^{z_i}}{\sum_j e^{z_j}}$ | $g'_i(z) = \sigma_i(z) [1 - \sigma_i(z)]$ |
 
 Leaky ReLU and PReLU look identical at first, but Leaky ReLU uses a fixed small slope ($\alpha$, typically 0.01) for negative values, while PReLU learns the slope ($\beta$) during training, providing more flexibility.
+
+### Error Functions:
+Error functions, also known as Loss Functions or Cost Functions, are used to measure the difference between the predicted output of a neural network and the actual output. The goal is to minimize this difference, which is typically achieved through optimization algorithms.
+
+Common Error Functions are:
+
+| Name | Definition | Applicability |
+|--|-----|-----|
+| **Mean Squared Error**  | $MSE = \frac{1}{n} \sum_{i=1}^n (y_i - \hat{y_i})^2$ | Regression |
+| **Mean Absolute Error** | $MAE = \frac{1}{n} \sum_{i=1}^n abs(y_i - \hat{y_i})$ | Regression |
+| **Cross Entropy** | $CE = -\sum_{i=1}^n y_i \log(\hat{y_i}) - (1 - y_i) \log(1 - \hat{y_i})$ | Classification (binary) |
+| **Binary Cross Entropy** | $BCE = -\sum_{i=1}^n y_i \log(\hat{y_i}) - (1 - y_i) \log(1 - \hat{y_i})$ | Classification (binary) |
+
+where:
+- $n$ is the number of samples
+- $y_i$ is the actual output
+- $\hat{y_i}$ is the predicted output
+
+Next, we will focus on the **Mean Squared Error** (MSE) error function, which is calculated for the output layer neurons.
+
+The contribution of the generic $n$-th neuron to the MSE is:
+
+(8) $\ \ \ \ E_n^{(L)} = \frac{1}{2} \left(y_n^{(L)} - y_n\right)^2$
+
+(9) $\ \ \ \ \frac{\partial E_n^{(L)}}{\partial y_n^{(L)}} = y_n^{(L)} - y_n$
+
+where:
+
+- $\frac{1}{2}$ is a normalization factor that does not affect the gradient calculation
+
+- $L$ is the number of layers in the network (i.e., it identifies the output layer).
+
+After each forward pass, the MSE for the output layer is:
+
+(10) $\ \ \ \ E_T^{(L)} = \sum_{n=1}^{P_L} E_n^{(L)}$
+
+and the $j$-th gradient for the output layer is:
+
+(11) $\ \ \ \ \frac{\partial E_T^{(L)}}{\partial y_j^{(L)}} = \frac{\partial}{\partial y_j^{(L)}} \sum_{n=1}^{P_L} E_n^{(L)}$
+
+There are not interactions between the outputs of the neurons in the output layer. This means that the total gradient is simply the sum of the gradients of the output layer neurons. Thus, the (11) equation becomes:
+
+(12) $\ \ \ \ \frac{\partial E_T^{(L)}}{\partial y_j^{(L)}} = \sum_{n=1}^{P_L} \frac{\partial E_n^{(L)}}{\partial y_j^{(L)}}$
+
+considering that $\frac{\partial E_n^{(L)}}{\partial y_j^{(L)}} = 0$ for $j \neq n$, we have:
+
+(13) $\ \ \ \ \frac{\partial E_T^{(L)}}{\partial y_j^{(L)}} \equiv \frac{\partial E_j^{(L)}}{\partial y_j^{(L)}} \Rightarrow y_j^{(L)} - y_j$
