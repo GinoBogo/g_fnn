@@ -32,9 +32,9 @@ static bool Create(struct g_layer_t *self, g_layer_data_t *data, int l_id) {
     if (self != NULL) {
         rvalue = g_layer_data_check(data, l_id);
 
-        const int N = data->y.len;
-
         if (rvalue) {
+            const int N = data->y.len;
+
             self->neurons.ptr = calloc(N, sizeof(g_neuron_t));
             self->neurons.len = N;
 
@@ -42,6 +42,8 @@ static bool Create(struct g_layer_t *self, g_layer_data_t *data, int l_id) {
         }
 
         if (rvalue) {
+            const int N = data->y.len;
+
             for (int i = 0; i < N; ++i) {
                 g_neuron_t *neuron = &self->neurons.ptr[i];
 
@@ -76,7 +78,9 @@ static void Destroy(struct g_layer_t *self) {
             for (int i = 0; i < N; ++i) {
                 g_neuron_t *neuron = &self->neurons.ptr[i];
 
-                neuron->Destroy(neuron);
+                if (neuron != NULL) {
+                    neuron->Destroy(neuron);
+                }
             }
 
             free(self->neurons.ptr);
@@ -206,7 +210,7 @@ bool g_layer_data_check(g_layer_data_t *data, int l_id) {
         }
 
         if (rvalue) {
-            // forward propagation 
+            // forward propagation
             rvalue &= data->x.len > 0;
             rvalue &= data->w.col == data->x.len + 1;
             rvalue &= data->w.row == data->z.len;
