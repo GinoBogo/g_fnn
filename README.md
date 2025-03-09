@@ -126,15 +126,17 @@ The contribution of the generic $n$-th neuron to the MSE is:
 
 (8) $\ \ \ \ E_n^{(L)} = \frac{1}{2} \left(y_n^{(L)} - y_n\right)^2$
 
+The corresponding $n$-th **gradient** is:
+
 (9) $\ \ \ \ \frac{\partial E_n^{(L)}}{\partial y_n^{(L)}} = y_n^{(L)} - y_n$
 
 where:
 
-- $\frac{1}{2}$ is a normalization factor that does not affect the gradient calculation
+- $\frac{1}{2}$ is a normalization factor that does not affect the gradient calculation,
 
-- $L$ is the number of layers in the network (i.e., it identifies the output layer).
+- $L$ is the number of layers in the neural network.
 
-After each forward pass, the MSE for the output layer is:
+Thus, the MSE for the output layer is:
 
 (10) $\ \ \ \ E_T^{(L)} = \sum_{n=0}^{P_L-1} E_n^{(L)}$
 
@@ -146,6 +148,6 @@ There are not interactions between the outputs of the neurons in the output laye
 
 (12) $\ \ \ \ \frac{\partial E_T^{(L)}}{\partial y_j^{(L)}} = \sum_{n=0}^{P_L-1} \frac{\partial E_n^{(L)}}{\partial y_j^{(L)}}$
 
-considering that $\frac{\partial E_n^{(L)}}{\partial y_j^{(L)}} = 0$ for $j \neq n$, we have:
+Considering that $\frac{\partial E_n^{(L)}}{\partial y_j^{(L)}} = 0$ for $j \neq n$, we have:
 
 (13) $\ \ \ \ \frac{\partial E_T^{(L)}}{\partial y_j^{(L)}} \equiv \frac{\partial E_j^{(L)}}{\partial y_j^{(L)}} \Rightarrow y_j^{(L)} - y_j$
