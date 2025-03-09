@@ -1,7 +1,7 @@
 # Feed-forward Neural Network
 Used in thousands of applications, Feed-forward Neural Networks are fundamental to deep learning. Their main advantage is structural flexibility, making them adaptable to various types of problems. A Feed-forward Neural Network with at least one hidden layer and sufficient neurons can approximate any continuous function, demonstrating its versatility and power as a _universal approximator_ in modeling complex behaviors. Fully-connected Neural Networks are a subset of Feed-forward Neural Networks and will be the focus of the following sections. 
 
-![Fully-connected Neural Network](./resources/images/g_ffn_fig00.png)
+![Fig. 0](./resources/images/g_ffn_fig00.png)
 
 ### Inputs of the $j$-th neuron:
 
@@ -120,6 +120,8 @@ where:
 
 Next, we will focus on the **Mean Squared Error** (MSE) error function, which is calculated for the output layer neurons.
 
+![Fig. 1](resources/images/g_ffn_fig01.png)
+
 The contribution of the generic $n$-th neuron to the MSE is:
 
 (8) $\ \ \ \ E_n^{(L)} = \frac{1}{2} \left(y_n^{(L)} - y_n\right)^2$
@@ -134,15 +136,15 @@ where:
 
 After each forward pass, the MSE for the output layer is:
 
-(10) $\ \ \ \ E_T^{(L)} = \sum_{n=1}^{P_L} E_n^{(L)}$
+(10) $\ \ \ \ E_T^{(L)} = \sum_{n=0}^{P_L-1} E_n^{(L)}$
 
 and the $j$-th gradient for the output layer is:
 
-(11) $\ \ \ \ \frac{\partial E_T^{(L)}}{\partial y_j^{(L)}} = \frac{\partial}{\partial y_j^{(L)}} \sum_{n=1}^{P_L} E_n^{(L)}$
+(11) $\ \ \ \ \frac{\partial E_T^{(L)}}{\partial y_j^{(L)}} = \frac{\partial}{\partial y_j^{(L)}} \sum_{n=0}^{P_L-1} E_n^{(L)}$
 
 There are not interactions between the outputs of the neurons in the output layer. This means that the total gradient is simply the sum of the gradients of the output layer neurons. Thus, the (11) equation becomes:
 
-(12) $\ \ \ \ \frac{\partial E_T^{(L)}}{\partial y_j^{(L)}} = \sum_{n=1}^{P_L} \frac{\partial E_n^{(L)}}{\partial y_j^{(L)}}$
+(12) $\ \ \ \ \frac{\partial E_T^{(L)}}{\partial y_j^{(L)}} = \sum_{n=0}^{P_L-1} \frac{\partial E_n^{(L)}}{\partial y_j^{(L)}}$
 
 considering that $\frac{\partial E_n^{(L)}}{\partial y_j^{(L)}} = 0$ for $j \neq n$, we have:
 
