@@ -86,7 +86,9 @@ static void Destroy(struct g_network_t *self) {
             for (int i = 0; i < N; ++i) {
                 g_layer_t *layer = &self->layers.ptr[i];
 
-                layer->Destroy(layer);
+                if (layer != NULL) {
+                    layer->Destroy(layer);
+                }
             }
 
             free(self->layers.ptr);
