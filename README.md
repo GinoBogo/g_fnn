@@ -1,7 +1,11 @@
 # Feed-forward Neural Network
+##### Notes and Reflections
+
 Used in thousands of applications, Feed-forward Neural Networks are fundamental to deep learning. Their main advantage is structural flexibility, making them adaptable to various types of problems. A Feed-forward Neural Network with at least one hidden layer and sufficient neurons can approximate any continuous function, demonstrating its versatility and power as a _universal approximator_ in modeling complex behaviors. Fully-connected Neural Networks are a subset of Feed-forward Neural Networks and will be the focus of the following sections. 
 
 ![Fig. 0](./resources/images/g_ffn_fig00.png)
+
+Fully-connected Neural Networks (also known as Dense Neural Networks) are a type of artificial neural network where every neuron in one layer is connected to every neuron in the next layer.
 
 ### Inputs of the $j$-th neuron:
 
@@ -16,7 +20,6 @@ and:
 
 - $P_{k}$ is the number of neurons in layer $k$
 - $P_{k-1}$ is the number of neurons in layer $k-1$
-
 
 ### Output of the $j$-th neuron:
 
@@ -35,7 +38,9 @@ Using (1) in (3) and writing the **bias** $b_{j}^{(k)}$ as neuron's weight $w_{P
 (4) $\ \ \ \ z_{j}^{(k)} = \sum_{i=0}^{P_{k}-1} w_{ij}^{(k)} \cdot y_{i}^{(k-1)} + w_{P_{k}j}^{(k)} \cdot 1$
 
 ~~~C
-/* Fully-connected Neural Network */
+/* Fully-connected Neural Network:
+ * every neuron in one layer is connected to every neuron in the next layer.
+ */
 
 float Xj[N];
 float Wj[N+1];
