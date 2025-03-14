@@ -181,5 +181,7 @@ Using (7) and (16) in (17):
 
 The equation (18) highlights an important concept: how variations in the $i$-th output of layer $L-1$ determine variations in $E_j^{(L)}$ in layer $L$. This forms the basis of the **back-propagation** algorithm.
 
+![Fig. 2](resources/images/g_ffn_fig02.png)
+
 ### Back-propagation
 Back-propagation is a key **learning algorithm** for artificial neural networks that calculates the gradient of the Error Function with respect to the network's weights by applying the **chain rule**. It adjusts the weights iteratively to minimize the error and improve the model's predictions.
