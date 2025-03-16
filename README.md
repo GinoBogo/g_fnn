@@ -42,18 +42,20 @@ Using (1) in (3) and writing the **bias** $b_{j}^{(k)}$ in terms of neuron's wei
  * every neuron in one layer is connected to every neuron in the next layer.
  */
 
-float Xj[N];
-float Wj[N+1];
+float Xj[Pk];
+float Wj[Pk+1];
 float Zj;
 float Yj;
 
-/* load X inputs (layer k) from Y outputs (layer k-1) */
+/* step 1: load X inputs (layer k) from Y outputs (layer k-1) */
 
+/* step 2: inputs weighting */
 Zj = Wj[N];
 for (int i = 0; i < N; ++i) {
 	Zj += Wj[i] * Xj[i];
 }
 
+/* step 3: output calculation */
 Yj = g(Zj);
 ~~~
 Regarding the partial derivatives of $y$ and $z$ we have:
@@ -64,6 +66,8 @@ Regarding the partial derivatives of $y$ and $z$ we have:
 (6) $\ \ \ \ \frac{\partial z_{j}^{(k)}}{\partial w_{ij}^{(k)}} = y_{i}^{(k-1)}$
 
 (7) $\ \ \ \ \frac{\partial z_{j}^{(k)}}{\partial y_{i}^{(k-1)}} = w_{ij}^{(k)}$
+
+Their usefulness will be clear in the following sections.
 
 ### Activation Functions:
 Activation Functions are mathematical equations that determine the output of a neural network's node and introduce non-linearity, enabling the network to model complex data patterns.
@@ -155,15 +159,15 @@ There are not interactions between the outputs of the neurons in the output laye
 
 (12) $\ \ \ \ \frac{\partial E_T^{(L)}}{\partial y_j^{(L)}} = \sum_{n=0}^{P_L-1} \frac{\partial E_n^{(L)}}{\partial y_j^{(L)}}$
 
-Considering that $\frac{\partial E_n^{(L)}}{\partial y_j^{(L)}} = 0$ for $j \neq n$, we have:
+Using (9) in (12) and considering that $\frac{\partial E_n^{(L)}}{\partial y_j^{(L)}} = 0$ for $j \neq n$, we have:
 
 (13) $\ \ \ \ \frac{\partial E_T^{(L)}}{\partial y_j^{(L)}} \equiv \frac{\partial E_j^{(L)}}{\partial y_j^{(L)}} \Rightarrow y_j^{(L)} - y_j$
 
-The equation (13) tells us how sensitive the error $E_j^{(L)}$ is to changes in the output $y_j^{(L)}$. These changes in $y_j$, in turn, depend on variations in $z_j$, given that $y_j = g(z_j)$. To find the relationship between variations in $E_j^{(L)}$ and variations in $z_j^{(L)}$, it worths recalling the **chain rule** for derivatives:
+Equation (13) tells us how sensitive the error $E_j^{(L)}$ is to changes in the output $y_j^{(L)}$. These changes in $y_j$, in turn, depend on variations in $z_j$, given that $y_j = g(z_j)$. To find the relationship between variations in $E_j^{(L)}$ and variations in $z_j^{(L)}$, it worths recalling the **chain rule** for derivatives:
 
 (14) $\ \ \ \ \frac{df}{dx} = \frac{df}{dg} \cdot \frac{dg}{dx}$
 
-In words, the derivative of a **composite function** $f\left(g(x)\right)$ with respect to $x$ is the product of the derivative of $f$ with respect to $g$ and the derivative of $g$ with respect to $x$. Applying this rule to the error $E_j^{(L)}$ we have:
+In other words, the derivative of a **composite function** $f\left(g(x)\right)$ with respect to $x$ is the product of the derivative of $f$ with respect to $g$ and the derivative of $g$ with respect to $x$. Applying this rule to the error $E_j^{(L)}$ we have:
 
 (15) $\ \ \ \ \frac{\partial E_j^{(L)}}{\partial z_j^{(L)}} = \frac{\partial E_j^{(L)}}{\partial y_j^{(L)}} \cdot \frac{\partial y_j^{(L)}}{\partial z_j^{(L)}}$
 
@@ -175,13 +179,19 @@ By applying the same method, it is possible to determine the relationship betwee
 
 (17) $\ \ \ \ \frac{\partial E_j^{(L)}}{\partial y_i^{(L-1)}} = \frac{\partial E_j^{(L)}}{\partial z_j^{(L)}} \cdot \frac{\partial z_j^{(L)}}{\partial y_i^{(L-1)}}$
 
-Using (7) and (16) in (17):
+Using (7) and (16) in (17) we have:
 
 (18) $\ \ \ \ \frac{\partial E_j^{(L)}}{\partial y_i^{(L-1)}} = \frac{\partial E_j^{(L)}}{\partial y_j^{(L)}} \cdot g'^{(L)}\left(z_j^{(L)}\right) \cdot w_{ij}^{(L)}$
 
-The equation (18) highlights an important concept: how variations in the $i$-th output of layer $L-1$ determine variations in $E_j^{(L)}$ in layer $L$. This forms the basis of the **back-propagation** algorithm.
+Equation (18) represents the amount of MSE variation that the $j$-th neuron in layer $L$ receives from the $i$-th neuron in layer $L-1$. However, the $i$-th neuron also supplies MSE variations to other neurons in layer $L$. Thus, the total amount of MSE variations that depend on the $i$-th neuron is:
+
+(19) $\ \ \ \ \frac{\partial E_i^{(L-1)}}{\partial y_i^{(L-1)}} = \sum_{j=0}^{P_{L-1}-1} \frac{\partial E_j^{(L)}}{\partial y_i^{(L-1)}}$
+
+Using (17) in (19) we have:
+
+(20) $\ \ \ \ \frac{\partial E_i^{(L-1)}}{\partial y_i^{(L-1)}} = \sum_{j=0}^{P_{L-1}-1} \frac{\partial E_j^{(L)}}{\partial y_j^{(L)}} \cdot g'^{(L)}\left(z_j^{(L)}\right) \cdot w_{ij}^{(L)}$
 
 ![Fig. 2](resources/images/g_ffn_fig02.png)
 
 ### Back-propagation
-Back-propagation is a key **learning algorithm** for artificial neural networks that calculates the gradient of the Error Function with respect to the network's weights by applying the **chain rule**. It adjusts the weights iteratively to minimize the error and improve the model's predictions.
+Back-propagation is a key **learning algorithm** for artificial neural networks that calculates the gradient of the Error Function with respect to the network's weights by applying the **chain rule**. It adjusts the weights iteratively to minimize the error and improve the model's predictions. 
