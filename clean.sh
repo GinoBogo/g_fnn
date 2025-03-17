@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Author: Gino Francesco Bogo
 
 set -euo pipefail
 
