@@ -100,11 +100,11 @@ Overview of the above-mentioned Activation Functions: definitions and derivative
 |--|-----|-----|
 | LINEAR | $g(z) = z$ | $g'(z) = 1$ |
 | TANH | $g(z) = \tanh(z)$ | $g'(z) = 1 - \tanh^2(z)$ |
-| RELU | $g(z) = \max(0, z)$ | $g'(z) = 0 \ \ \ \ \text{if } z \leq 0; \ \ \ \ g'(z) = 1 \ \ \ \ \text{if } z > 0$ |
-| LEAKY_RELU | $g(z) = \alpha z \ \ \ \ \text{if } z \leq 0; \ \ \ \ g(z) = z  \ \ \ \ \text{if } z > 0$ | $g'(z) = \alpha \ \ \ \ \text{if } z \leq 0; \ \ \ \ g'(z) = 1 \ \ \ \ \text{if } z > 0$ |
-| PRELU | $g(z) = \beta z \ \ \ \ \text{if } z \leq 0; \ \ \ \ g(z) = z \ \ \ \ \text{if } z > 0$ | $g'(z) = \beta \ \ \ \ \text{if } z \leq 0; \ \ \ \ g'(z) = 1 \ \ \ \ \text{if } z > 0$ |
+| RELU | $g(z) = \max(0, z)$ | $g'(z) = 0 \ \ \ \text{if } z \leq 0; \ \ \ g'(z) = 1 \ \ \ \text{if } z > 0$ |
+| LEAKY_RELU | $g(z) = \alpha z \ \ \ \text{if } z \leq 0; \ \ \ g(z) = z  \ \ \ \text{if } z > 0$ | $g'(z) = \alpha \ \ \ \text{if } z \leq 0; \ \ \ g'(z) = 1 \ \ \ \text{if } z > 0$ |
+| PRELU | $g(z) = \beta z \ \ \ \text{if } z \leq 0; \ \ \ g(z) = z \ \ \ \text{if } z > 0$ | $g'(z) = \beta \ \ \ \text{if } z \leq 0; \ \ \ g'(z) = 1 \ \ \ \text{if } z > 0$ |
 | SWISH | $g(z) = z \cdot \sigma(z)$ | $g'(z) = g(z) + \sigma(z) [1 - g(z)]$ |
-| ELU | $g(z) = \alpha (e^z - 1) \ \ \ \ \text{if } z \leq 0; \ \ \ \ g(z) = z \ \ \ \ \text{if } z > 0$ | $g'(z) = g(z) + \alpha \ \ \ \ \text{if } z \leq 0; \ \ \ \ g'(z) = 1 \ \ \ \ \text{if } z > 0$ |
+| ELU | $g(z) = \alpha (e^z - 1) \ \ \ \text{if } z \leq 0; \ \ \ g(z) = z \ \ \ \text{if } z > 0$ | $g'(z) = g(z) + \alpha \ \ \ \ \text{if } z \leq 0; \ \ \ g'(z) = 1 \ \ \ \text{if } z > 0$ |
 | SIGMOID | $g(z) = \sigma(z) = \frac{1}{1 + e^{-z}}$ | $g'(z) = \sigma(z) [1 - \sigma(z)]$ |
 | SOFTMAX | $g_i(z) = \frac{e^{z_i}}{\sum_j e^{z_j}}$ | $g'_i(z) = \sigma_i(z) [1 - \sigma_i(z)]$ |
 
@@ -117,8 +117,8 @@ Common Error Functions are:
 
 | Name | Definition | Applicability |
 |--|-----|-----|
-| **Mean Squared Error**  | $MSE = \frac{1}{n} \sum_{i=1}^n (y_i - \hat{y_i})^2$ | Regression |
-| **Mean Absolute Error** | $MAE = \frac{1}{n} \sum_{i=1}^n abs(y_i - \hat{y_i})$ | Regression |
+| **Mean Squared Error**  | $MSE = \frac{1}{n} \sum_{i=1}^n (\hat{y_i} - y_i)^2$ | Regression |
+| **Mean Absolute Error** | $MAE = \frac{1}{n} \sum_{i=1}^n abs(\hat{y_i} - y_i)$ | Regression |
 | **Cross Entropy** | $CE = -\sum_{i=1}^n y_i \log(\hat{y_i}) - (1 - y_i) \log(1 - \hat{y_i})$ | Classification (binary) |
 | **Binary Cross Entropy** | $BCE = -\sum_{i=1}^n y_i \log(\hat{y_i}) - (1 - y_i) \log(1 - \hat{y_i})$ | Classification (binary) |
 
@@ -145,7 +145,7 @@ where:
 
 - $L$ is the number of layers in the neural network.
 
-Intuitively, the gradient $\frac{\partial E}{\partial y}$ measures how the error $E$ changes with variations in the output $y$. Since $E(y,\hat{y})$ is a non-negative function, a negative gradient implies that the error is decreasing. A decreasing error clearly indicates that the network training is progressing as expected.
+Intuitively, the gradient $\frac{\partial E}{\partial \hat{y}}$ measures how the error $E$ changes with variations in the output $\hat{y}$. Since $E(\hat{y}, y)$ is a non-negative function, a negative gradient implies that the error is decreasing. A decreasing error clearly indicates that the network training is progressing as expected.
 
 The MSE for the output layer is:
 
