@@ -138,15 +138,15 @@ The contribution of the generic $n$-th neuron to the MSE is:
 
 (8) $\ \ \ \ E_n^{(L)} = \frac{1}{2} \left(y_n^{(L)} - y_n\right)^2$
 
-The corresponding $n$-th **gradient** is:
-
-(9) $\ \ \ \ \frac{\partial E_n^{(L)}}{\partial y_n^{(L)}} = y_n^{(L)} - y_n$
-
 where:
 
 - $\frac{1}{2}$ is a normalization factor that does not affect the gradient's meaning,
 
 - $L$ is the number of layers in the neural network.
+
+The corresponding $n$-th **gradient** is:
+
+(9) $\ \ \ \ \frac{\partial E_n^{(L)}}{\partial y_n^{(L)}} = y_n^{(L)} - y_n$
 
 Intuitively, the gradient $\frac{\partial E}{\partial \hat{y}}$ measures how the error $E$ changes with variations in the output $\hat{y}$. Since $E(\hat{y}, y)$ is a non-negative function, a negative gradient implies that the error is decreasing. A decreasing error clearly indicates that the network training is progressing as expected.
 
