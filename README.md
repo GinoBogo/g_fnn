@@ -33,6 +33,8 @@ and:
 
 (3) $\ \ \ \ z_{j}^{(k)} = \sum_{i=0}^{P_{k}-1} w_{ij}^{(k)} \cdot x_{ij}^{(k)} + b_{j}^{(k)}$
 
+is the linear combination between inputs and weights.
+
 Using (1) in (3) and writing the **bias** $b_{j}^{(k)}$ in terms of neuron's weight $w_{P_{k}j}^{(k)}$ we have:
 
 (4) $\ \ \ \ z_{j}^{(k)} = \sum_{i=0}^{P_{k}-1} w_{ij}^{(k)} \cdot y_{i}^{(k-1)} + w_{P_{k}j}^{(k)} \cdot 1$
@@ -48,10 +50,11 @@ float Zj;
 float Yj;
 
 /* step 1: load X inputs (layer k) from Y outputs (layer k-1) */
+...
 
-/* step 2: inputs weighting */
-Zj = Wj[N];
-for (int i = 0; i < N; ++i) {
+/* step 2: weighted sum of inputs and weights */
+Zj = Wj[Pk];
+for (int i = 0; i < Pk; ++i) {
 	Zj += Wj[i] * Xj[i];
 }
 
