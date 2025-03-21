@@ -194,7 +194,100 @@ Using (17) in (19) we have:
 
 (20) $\ \ \ \ \frac{\partial E_i^{(L-1)}}{\partial y_i^{(L-1)}} = \sum_{j=0}^{P_{L-1}-1} \frac{\partial E_j^{(L)}}{\partial y_j^{(L)}} \cdot g'^{(L)}\left(z_j^{(L)}\right) \cdot w_{ij}^{(L)}$
 
+that shows a kind of back-propagation relationship between $\frac{\partial E_i^{(L-1)}}{\partial y_i^{(L-1)}}$ and $\frac{\partial E_j^{(L)}}{\partial y_j^{(L)}}$.
+
 ![Fig. 2](resources/images/g_ffn_fig02.png)
+
+A basic code example in C of a feed-forward neural network follows:
+
+```C
+/* Step 1: define network structure */
+const size_t L    = 4;            /* number of layers */
+const size_t P[L] = {7,20,20,10}; /* number of neurons in each layer */
+
+/* Matrix of pointers: [layer][neuron][input] */
+float **x[L];
+float **w[L];
+/* Arrays of pointers: [layer][neuron] */
+float *z[L];
+float *y[L];
+float *dE_dy[L];
+float *dy_dz[L];
+
+/* Step 2: allocate memory */
+x[0] = (float **)malloc(P[0] * sizeof(float *));
+for (size_t j = 0; j < P[0]; j++) {
+	x[0][j] = (float *)calloc(1, sizeof(float));
+}
+/* Note: weights and biases should not be defined for the input layer */
+w[0] = (float **)malloc(P[0] * sizeof(float *));
+for (size_t j = 0; j < P[0]; j++) {
+	w[0][j] = (float *)calloc(2, sizeof(float));
+}
+	
+z[0]     = (float *)calloc(P[0], sizeof(float));
+y[0]     = (float *)calloc(P[0], sizeof(float));
+dE_dy[0] = (float *)calloc(P[0], sizeof(float));
+dy_dz[0] = (float *)calloc(P[0], sizeof(float));
+
+for (size_t i = 1; i < L; i++) {
+	x[i] = (float **)malloc(P[i] * sizeof(float *));
+	for (size_t j = 0; j < P[i]; j++) {
+		x[i][j] = (float *)calloc(P[i-1], sizeof(float));
+	}
+
+	w[i] = (float **)malloc(P[i] * sizeof(float *));
+	for (size_t j = 0; j < P[i]; j++) {
+		w[i][j] = (float *)calloc(P[i-1] + 1, sizeof(float));
+	}
+
+	z[i]     = (float *)calloc(P[i], sizeof(float));
+	y[i]     = (float *)calloc(P[i], sizeof(float));
+	dE_dy[i] = (float *)calloc(P[i], sizeof(float));
+	dy_dz[i] = (float *)calloc(P[i], sizeof(float));
+}
+
+/* Step 3: load neuron weights (Xavier intialization) */
+
+/* Step 4: fetch inputs, calculate predicted outputs */
+
+/* Step 5: load actual outputs */
+float *actual_y = (float *)calloc(P[L-1], sizeof(float));
+
+/* Step 6: calculate dE/dy for the last layer */
+for (size_t i = 0; i < P[L-1]; i++) {
+	dE_dy[L-1][i] = y[L-1][i] - actual_y[i];
+}
+
+free(actual_y);
+
+/* Step 7: calculate dE/dy for the previous layers */
+for (size_t i = 0; i < P[L-2]; i++) {	
+	dE_dy[L-2][i] = 0.0;
+
+	for (size_t j = 0; j < P[L-1]; j++) {
+		dE_dy[L-2][i] += dE_dy[L-1][j] * dy_dz[L-1][j] * w[L-1][i][j];
+	}
+}
+
+/* Step 8: release memory */
+for (size_t i = 0; i < L; i++) {
+	for (size_t j = 0; j < P[i]; j++) {
+		free(x[i][j]);
+	}
+	free(x[i]);
+
+	for (size_t j = 0; j < P[i]; j++) {
+		free(w[i][j]);
+	}
+	free(w[i]);
+
+	free(z[i]);
+	free(y[i]);
+	free(dE_dy[i]);
+	free(dy_dz[i]);
+}
+```
 
 ### Back-propagation
 Back-propagation is a key **learning algorithm** for artificial neural networks that calculates the gradient of the Error Function with respect to the network's weights by applying the **chain rule**. It adjusts the weights iteratively to minimize the error and improve the model's predictions. 
