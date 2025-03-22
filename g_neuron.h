@@ -61,14 +61,14 @@ typedef struct g_act_func_args_t {
 
 typedef struct g_layer_data_t {
     // forward propagation
-    f_vector_t x; // neuron inputs
-    f_matrix_t w; // neuron weights
-    f_vector_t z; // layer weighted sums
-    f_vector_t y; // layer outputs
+    f_vector_t x; // neuron's inputs
+    f_matrix_t w; // neuron's weights
+    f_vector_t z; // layer's weighted sums
+    f_vector_t y; // layer's outputs
 
     // backward propagation
-    f_vector_t dy_dz; // layer Y vs. Z derivatives
-    f_vector_t de_dy; // layer E vs. Y derivatives
+    f_vector_t dy_dz; // layer's dy/dz derivatives
+    f_vector_t de_dy; // layer's dE/dy derivatives
 
     g_act_func_type_t af_type;
     g_act_func_call_t af_call;
