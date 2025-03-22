@@ -9,8 +9,8 @@
 #include "g_layer.h"
 
 #include <assert.h> // assert
-#include <math.h>   // expf
-#include <stdlib.h> // NULL, calloc, free
+#include <math.h>   // expf, sqrtf
+#include <stdlib.h> // NULL, RAND_MAX, calloc, free, rand
 
 #include "g_neuron.h"
 
@@ -26,11 +26,14 @@ static void __unsafe_reset(g_layer_t *self) {
     self->_is_safe = false;
 }
 
-static void xavier_init(float *weights, size_t size) {
-    float std_dev = sqrtf(2.0f / size);
+static void __xavier_init(float *weights, int n_in, int n_out) {
+    float std_dev = sqrtf(6.0f / (n_in + n_out));
 
-    for (size_t i = 0; i < size; i++) {
-        weights[i] = (((float)rand() / (float)RAND_MAX) * (2.0f * std_dev)) - std_dev;
+    for (int i = 0; i < n_in; i++) {
+        // rand() does not generate uniform random numbers [0, 1]
+        float number = (float)rand() / (float)RAND_MAX;
+
+        weights[i] = (number * (2.0f * std_dev)) - std_dev;
     }
 }
 
@@ -103,9 +106,10 @@ static void Weights_Init(struct g_layer_t *self) {
         const int N = self->neurons.len;
 
         for (int i = 0; i < N; ++i) {
-            float *weights = f_matrix_row(&self->data->w, i);
+            float *weights_ptr = f_matrix_row(&self->data->w, i);
+            int    weights_len = self->data->w.col;
 
-            xavier_init(weights, self->data->w.col);
+            __xavier_init(weights_ptr, weights_len, N);
         }
     }
 }
