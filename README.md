@@ -49,16 +49,16 @@ float Wj[Pk+1];
 float Zj;
 float Yj;
 
-/* step 1: load X inputs (layer k) from Y outputs (layer k-1) */
+/* Step 1: load X inputs (layer k) from Y outputs (layer k-1) */
 ...
 
-/* step 2: weighted sum of inputs and weights */
+/* Step 2: weighted sum of inputs and weights */
 Zj = Wj[Pk];
 for (int i = 0; i < Pk; ++i) {
 	Zj += Wj[i] * Xj[i];
 }
 
-/* step 3: output calculation */
+/* Step 3: output calculation */
 Yj = g(Zj);
 ~~~
 Regarding the partial derivatives of $y$ and $z$ we have:
@@ -198,94 +198,165 @@ that shows a kind of back-propagation relationship between $\frac{\partial E_i^{
 
 ![Fig. 2](resources/images/g_ffn_fig02.png)
 
-A basic code example in C of a feed-forward neural network follows:
+It is useful to introduce a new notation to make the above-mentioned relationships more compact. We define the **partial derivative** of the error $E_j^{(l)}$ in the $j$-th neuron with respect to the output of the $j$-th neuron itself as:
+
+(21) $\ \ \ \ \epsilon_j^{(l)} \equiv \frac{\partial E_j^{(l)}}{\partial y_j^{(l)}}$
+
+Using (21) in (20) we have:
+
+(22) $\ \ \ \ \epsilon_i^{(L-1)} = \sum_{j=0}^{P_{L-1}} \epsilon_j^{(L)} \cdot g'^{(L)}\left(z_j^{(L)}\right) \cdot w_{ij}^{(L)}$
+
+and more generally:
+
+(23) $\ \ \ \ \epsilon_i^{(l)} = \sum_{j=0}^{P_{l+1}} \epsilon_j^{(l+1)} \cdot g'^{(l+1)}\left(z_j^{(l+1)}\right) \cdot w_{ij}^{(l+1)}$
+
+where the layer index $l$ ranges from $L-1$ to $1$.
+
+![Fig. 3](resources/images/g_ffn_fig03.png)
+
+The following is a basic example in C that illustrates the above-mentioned concepts:
 
 ```C
-/* Step 1: define network structure */
-const size_t L    = 4;            /* number of layers */
-const size_t P[L] = {7,20,20,10}; /* number of neurons in each layer */
+#include <math.h>   // expf, sqrtf
+#include <stdio.h>  // NULL, size_t
+#include <stdlib.h> // RAND_MAX, calloc, free, malloc, rand
+#include <time.h>   // time
 
-/* Matrix of pointers: [layer][neuron][input] */
-float **x[L];
-float **w[L];
-/* Arrays of pointers: [layer][neuron] */
-float *z[L];
-float *y[L];
-float *dE_dy[L];
-float *dy_dz[L];
+extern void load_network_inputs(float **x, size_t neurons);
+extern void load_actual_outputs(float *actual_y, size_t neurons);
 
-/* Step 2: allocate memory */
-x[0] = (float **)malloc(P[0] * sizeof(float *));
-for (size_t j = 0; j < P[0]; j++) {
-	x[0][j] = (float *)calloc(1, sizeof(float));
-}
-/* Note: weights and biases should not be defined for the input layer */
-w[0] = (float **)malloc(P[0] * sizeof(float *));
-for (size_t j = 0; j < P[0]; j++) {
-	w[0][j] = (float *)calloc(2, sizeof(float));
-}
-	
-z[0]     = (float *)calloc(P[0], sizeof(float));
-y[0]     = (float *)calloc(P[0], sizeof(float));
-dE_dy[0] = (float *)calloc(P[0], sizeof(float));
-dy_dz[0] = (float *)calloc(P[0], sizeof(float));
-
-for (size_t i = 1; i < L; i++) {
-	x[i] = (float **)malloc(P[i] * sizeof(float *));
-	for (size_t j = 0; j < P[i]; j++) {
-		x[i][j] = (float *)calloc(P[i-1], sizeof(float));
-	}
-
-	w[i] = (float **)malloc(P[i] * sizeof(float *));
-	for (size_t j = 0; j < P[i]; j++) {
-		w[i][j] = (float *)calloc(P[i-1] + 1, sizeof(float));
-	}
-
-	z[i]     = (float *)calloc(P[i], sizeof(float));
-	y[i]     = (float *)calloc(P[i], sizeof(float));
-	dE_dy[i] = (float *)calloc(P[i], sizeof(float));
-	dy_dz[i] = (float *)calloc(P[i], sizeof(float));
+// Define activation functions
+float g_sigmoid(float z) {
+    return 1 / (1 + expf(-z));
 }
 
-/* Step 3: load neuron weights (Xavier intialization) */
-
-/* Step 4: fetch inputs, calculate predicted outputs */
-
-/* Step 5: load actual outputs */
-float *actual_y = (float *)calloc(P[L-1], sizeof(float));
-
-/* Step 6: calculate dE/dy for the last layer */
-for (size_t i = 0; i < P[L-1]; i++) {
-	dE_dy[L-1][i] = y[L-1][i] - actual_y[i];
+float d_sigmoid(float y) {
+    return y * (1 - y);
 }
 
-free(actual_y);
+// Xavier initialization
+void xavier_init(float *weights, size_t size) {
+    float std_dev = sqrtf(2.0 / size);
 
-/* Step 7: calculate dE/dy for the previous layers */
-for (size_t i = 0; i < P[L-2]; i++) {	
-	dE_dy[L-2][i] = 0.0;
-
-	for (size_t j = 0; j < P[L-1]; j++) {
-		dE_dy[L-2][i] += dE_dy[L-1][j] * dy_dz[L-1][j] * w[L-1][i][j];
-	}
+    for (size_t i = 0; i < size; i++) {
+        weights[i] = (((float)rand() / (float)RAND_MAX) * (2 * std_dev)) - std_dev;
+    }
 }
 
-/* Step 8: release memory */
-for (size_t i = 0; i < L; i++) {
-	for (size_t j = 0; j < P[i]; j++) {
-		free(x[i][j]);
-	}
-	free(x[i]);
+int main(void) {
+    srand(time(NULL)); // Seed for random number generation
 
-	for (size_t j = 0; j < P[i]; j++) {
-		free(w[i][j]);
-	}
-	free(w[i]);
+    const size_t L    = 4;               /* number of layers */
+    const size_t P[L] = {7, 20, 20, 10}; /* number of neurons in each layer */
 
-	free(z[i]);
-	free(y[i]);
-	free(dE_dy[i]);
-	free(dy_dz[i]);
+    /* Matrices of pointers: [layer][neuron][input] */
+    float **x[L];
+    float **w[L];
+    /* Arrays of pointers: [layer][neuron] */
+    float *z[L];
+    float *y[L];
+    float *dE_dy[L];
+    float *dy_dz[L];
+
+    // Allocate memory
+    for (size_t l = 0; l < L; l++) {
+        x[l] = (float **)malloc(P[l] * sizeof(float *));
+
+        for (size_t n = 0; n < P[l]; n++) {
+            if (l == 0) {
+                x[l][n] = (float *)calloc(1, sizeof(float));
+            } else {
+                x[l][n] = (float *)calloc(P[l - 1], sizeof(float));
+            }
+        }
+
+        if (l > 0) {
+            w[l] = (float **)malloc(P[l] * sizeof(float *));
+
+            for (size_t n = 0; n < P[l]; n++) {
+                w[l][n] = (float *)calloc(P[l - 1] + 1, sizeof(float));
+                xavier_init(w[l][n], P[l - 1] + 1); // Initialize weights
+            }
+        }
+
+        z[l]     = (float *)calloc(P[l], sizeof(float));
+        y[l]     = (float *)calloc(P[l], sizeof(float));
+        dE_dy[l] = (float *)calloc(P[l], sizeof(float));
+        dy_dz[l] = (float *)calloc(P[l], sizeof(float));
+    }
+
+    // Fetch inputs and calculate predicted outputs
+    load_network_inputs(x[0], P[0]);
+
+    for (size_t l = 0; l < L; l++) {
+        if (l == 0) {
+            // Input layer, just copy inputs
+            for (size_t n = 0; n < P[l]; n++) {
+                y[l][n] = x[l][n][0]; // Assuming input is stored in x[l][n][0]
+            }
+        } else {
+            for (size_t n = 0; n < P[l]; n++) {
+                z[l][n] = w[l][n][P[l - 1]]; // Add bias
+
+                for (size_t i = 0; i < P[l - 1]; i++) {
+                    z[l][n] += y[l - 1][i] * w[l][n][i];
+                }
+
+                y[l][n] = g_sigmoid(z[l][n]);
+            }
+        }
+    }
+
+    // Load actual outputs
+    float *actual_y = (float *)calloc(P[L - 1], sizeof(float));
+    load_actual_outputs(actual_y, P[L - 1]);
+
+    // Calculate dE/dy for the last layer
+    for (size_t i = 0; i < P[L - 1]; i++) {
+        dE_dy[L - 1][i] = y[L - 1][i] - actual_y[i]; // Assuming MSE as error function
+    }
+
+    free(actual_y);
+
+    // Calculate dy/dz for all layers (assuming sigmoid activation)
+    for (size_t l = 1; l < L; l++) {
+        for (size_t n = 0; n < P[l]; n++) {
+            dy_dz[l][n] = d_sigmoid(y[l][n]);
+        }
+    }
+
+    // Calculate dE/dy for previous layers
+    for (size_t l = L - 2; l > 0; l--) {
+        for (size_t i = 0; i < P[l]; i++) {
+            dE_dy[l][i] = 0.0;
+
+            for (size_t j = 0; j < P[l + 1]; j++) {
+                dE_dy[l][i] += dE_dy[l + 1][j] * dy_dz[l + 1][j] * w[l + 1][j][i];
+            }
+        }
+    }
+
+    // Release memory
+    for (size_t l = 0; l < L; l++) {
+        for (size_t n = 0; n < P[l]; n++) {
+            free(x[l][n]);
+        }
+        free(x[l]);
+
+        if (l > 0) {
+            for (size_t n = 0; n < P[l]; n++) {
+                free(w[l][n]);
+            }
+            free(w[l]);
+        }
+
+        free(z[l]);
+        free(y[l]);
+        free(dE_dy[l]);
+        free(dy_dz[l]);
+    }
+
+    return 0;
 }
 ```
 
