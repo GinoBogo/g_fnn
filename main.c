@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
     float             L01_dY_dZ[20];
     float             L01_dE_dY[20];
     g_act_func_type_t L01_AF_TYPE    = LEAKY_RELU;
-    float             L01_AF_ARGS[1] = {0.001};
+    float             L01_AF_ARGS[1] = {0.001f};
 
     // layer 2: hidden layer
     float             L02_W[20][SIZEOF(L01_Y) + 1];
@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
     float             L02_dY_dZ[20];
     float             L02_dE_dY[20];
     g_act_func_type_t L02_AF_TYPE    = LEAKY_RELU;
-    float             L02_AF_ARGS[1] = {0.001};
+    float             L02_AF_ARGS[1] = {0.001f};
 
     // layer 3: output layer
     float             L03_W[10][SIZEOF(L02_Y) + 1];
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     float             L03_dY_dZ[10];
     float             L03_dE_dY[10];
     g_act_func_type_t L03_AF_TYPE    = SIGMOID;
-    float             L03_AF_ARGS[1] = {0.0};
+    float             L03_AF_ARGS[1] = {0.0f};
 
     g_layer_data_t layer_data[3];
 
