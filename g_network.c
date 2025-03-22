@@ -9,7 +9,8 @@
 #include "g_network.h"
 
 #include <assert.h> // assert
-#include <stdlib.h> // NULL, calloc, free
+#include <stdlib.h> // NULL, calloc, free, srand
+#include <time.h>   // time
 
 static void __unsafe_reset(g_network_t *self) {
     assert(self != NULL);
@@ -98,6 +99,20 @@ static void Destroy(struct g_network_t *self) {
     }
 }
 
+static void Weights_Init(struct g_network_t *self) {
+    if ((self != NULL) && self->_is_safe) {
+        srand(time(NULL));
+
+        const int N = self->layers.len;
+
+        for (int i = 0; i < N; ++i) {
+            g_layer_t *layer = &self->layers.ptr[i];
+
+            layer->Weights_Init(layer);
+        }
+    }
+}
+
 static void Step_Fwd(struct g_network_t *self) {
     if ((self != NULL) && self->_is_safe) {
         const int N = self->layers.len;
@@ -131,9 +146,10 @@ void g_network_link(g_network_t *self) {
         __unsafe_reset(self);
 
         // functions
-        self->Create   = Create;
-        self->Destroy  = Destroy;
-        self->Step_Fwd = Step_Fwd;
+        self->Create       = Create;
+        self->Destroy      = Destroy;
+        self->Weights_Init = Weights_Init;
+        self->Step_Fwd     = Step_Fwd;
     }
 }
 

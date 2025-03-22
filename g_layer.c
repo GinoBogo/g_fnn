@@ -26,6 +26,14 @@ static void __unsafe_reset(g_layer_t *self) {
     self->_is_safe = false;
 }
 
+static void xavier_init(float *weights, size_t size) {
+    float std_dev = sqrtf(2.0f / size);
+
+    for (size_t i = 0; i < size; i++) {
+        weights[i] = (((float)rand() / (float)RAND_MAX) * (2.0f * std_dev)) - std_dev;
+    }
+}
+
 static bool Create(struct g_layer_t *self, g_layer_data_t *data, int l_id) {
     bool rvalue = false;
 
@@ -90,6 +98,18 @@ static void Destroy(struct g_layer_t *self) {
     }
 }
 
+static void Weights_Init(struct g_layer_t *self) {
+    if ((self != NULL) && self->_is_safe) {
+        const int N = self->neurons.len;
+
+        for (int i = 0; i < N; ++i) {
+            float *weights = f_matrix_row(&self->data->w, i);
+
+            xavier_init(weights, self->data->w.col);
+        }
+    }
+}
+
 static void Step_Fwd(struct g_layer_t *self) {
     if ((self != NULL) && self->_is_safe) {
         const int N = self->neurons.len;
@@ -125,9 +145,10 @@ void g_layer_link(g_layer_t *self) {
         __unsafe_reset(self);
 
         // functions
-        self->Create   = Create;
-        self->Destroy  = Destroy;
-        self->Step_Fwd = Step_Fwd;
+        self->Create       = Create;
+        self->Destroy      = Destroy;
+        self->Weights_Init = Weights_Init;
+        self->Step_Fwd     = Step_Fwd;
     }
 }
 

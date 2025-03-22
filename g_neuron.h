@@ -20,8 +20,8 @@ typedef struct f_vector_t {
 
 typedef struct f_matrix_t {
     float *ptr;
-    int    row;
-    int    col;
+    int    row; // number of neurons in a layer
+    int    col; // number of weights per neuron
 } f_matrix_t;
 
 extern float *f_matrix_row(f_matrix_t *mat, int row);

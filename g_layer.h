@@ -22,6 +22,7 @@ typedef struct g_layer_t {
     // functions
     bool (*Create)(struct g_layer_t *self, g_layer_data_t *data, int l_id);
     void (*Destroy)(struct g_layer_t *self);
+    void (*Weights_Init)(struct g_layer_t *self);
     void (*Step_Fwd)(struct g_layer_t *self);
 
     // intrinsic

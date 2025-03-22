@@ -115,6 +115,8 @@ int main(int argc, char *argv[]) {
     g_network_link(&network);
 
     if (network.Create(&network, &layers_data)) {
+        network.Weights_Init(&network);
+
         // TODO: load input data
         network.Step_Fwd(&network);
     }
