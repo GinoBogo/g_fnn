@@ -384,6 +384,6 @@ Back-propagation is a key **learning algorithm** for artificial neural networks 
 
 Equation (21) describes the back-propagation of errors $E_j^{(L)}$ from the output layer to the hidden layers. On the other hand, $E_j^{(l)}$ itself is appropriate term to use for updating the weights. Using the notation $\hat{w}$ to indicate the updated weights, we have:
 
-(24) $\ \ \ \ \hat{w}_{ij}^{(l)} = w_{ij}^{(l)} - \eta \cdot \frac{\partial E_j^{(l)}}{\partial w_{ij}^{(l)}}$
+(22) $\ \ \ \ \hat{w}_{ij}^{(l)} = w_{ij}^{(l)} - \eta \cdot \frac{\partial E_j^{(l)}}{\partial w_{ij}^{(l)}}$
 
-where $\eta$ is the **learning rate**.
+where $\eta$ is the **learning rate**, which controls the step size of the gradient descent algorithm.
