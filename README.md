@@ -194,23 +194,13 @@ Using (17) in (19) we have:
 
 (20) $\ \ \ \ \frac{\partial E_i^{(L-1)}}{\partial y_i^{(L-1)}} = \sum_{j=0}^{P_{L-1}-1} \frac{\partial E_j^{(L)}}{\partial y_j^{(L)}} \cdot g'^{(L)}\left(z_j^{(L)}\right) \cdot w_{ij}^{(L)}$
 
-that shows a kind of back-propagation relationship between $\frac{\partial E_i^{(L-1)}}{\partial y_i^{(L-1)}}$ and $\frac{\partial E_j^{(L)}}{\partial y_j^{(L)}}$.
+Note that, all elements in the second term of (20) are known once a forward propagation is performed.
 
 ![Fig. 2](resources/images/g_ffn_fig02.png)
 
-It is useful to introduce a new notation to make the above-mentioned relationships more compact. We define the **partial derivative** of the error $E_j^{(l)}$ in the $j$-th neuron with respect to the output of the $j$-th neuron itself as:
+We can generalize the (20) to any layer $l$ in the range $1 \leq l \leq L-1$. In this case, we have:
 
-(21) $\ \ \ \ \epsilon_j^{(l)} \equiv \frac{\partial E_j^{(l)}}{\partial y_j^{(l)}}$
-
-Using (21) in (20) we have:
-
-(22) $\ \ \ \ \epsilon_i^{(L-1)} = \sum_{j=0}^{P_{L-1}} \epsilon_j^{(L)} \cdot g'^{(L)}\left(z_j^{(L)}\right) \cdot w_{ij}^{(L)}$
-
-and more generally:
-
-(23) $\ \ \ \ \epsilon_i^{(l)} = \sum_{j=0}^{P_{l+1}} \epsilon_j^{(l+1)} \cdot g'^{(l+1)}\left(z_j^{(l+1)}\right) \cdot w_{ij}^{(l+1)}$
-
-where the layer index $l$ ranges from $L-1$ to $1$.
+(21) $\ \ \ \ \frac{\partial E_i^{(l)}}{\partial y_i^{(l)}} = \sum_{j=0}^{P_{l+1}-1} \frac{\partial E_j^{(l+1)}}{\partial y_j^{(l+1)}} \cdot g'^{(l+1)}\left(z_j^{(l+1)}\right) \cdot w_{ij}^{(l+1)}$
 
 ![Fig. 3](resources/images/g_ffn_fig03.png)
 
@@ -391,3 +381,9 @@ int main(void) {
 
 ### Back-propagation
 Back-propagation is a key **learning algorithm** for artificial neural networks that calculates the gradient of the Error Function with respect to the network's weights by applying the **chain rule**. It adjusts the weights iteratively to minimize the error and improve the model's predictions. 
+
+Equation (21) describes the back-propagation of errors $E_j^{(L)}$ from the output layer to the hidden layers. On the other hand, $E_j^{(l)}$ itself is appropriate term to use for updating the weights. Using the notation $\hat{w}$ to indicate the updated weights, we have:
+
+(24) $\ \ \ \ \hat{w}_{ij}^{(l)} = w_{ij}^{(l)} - \eta \cdot \frac{\partial E_j^{(l)}}{\partial w_{ij}^{(l)}}$
+
+where $\eta$ is the **learning rate**.
