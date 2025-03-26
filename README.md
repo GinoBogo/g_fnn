@@ -5,7 +5,7 @@ Used in thousands of applications, Feed-forward Neural Networks are fundamental 
 
 ![Fig. 0](./resources/images/g_ffn_fig00.png)
 
-Fully-connected Neural Networks (also known as Dense Neural Networks) are a type of artificial neural network where every neuron in one layer is connected to every neuron in the next layer.
+Fully-connected Neural Networks (also known as Dense Neural Networks) are a type of artificial neural network in which every neuron in one layer is connected to every neuron in the next layer. However, this does not apply to the output layer, where neurons are not connected to any subsequent layer.
 
 ### Inputs of the $j$-th neuron
 
@@ -35,13 +35,15 @@ and:
 
 represents the linear combination of inputs, weights, and the **bias** term.
 
-The bias is a constant term that allows the activation function to shift horizontally, either to the left or right, which can help model complex data patterns. It is equivalent to the product of the weight $w_{P_{k}j}^{(k)}$ and the virtual input $x_{P_{k}}^{(k)} = 1$.
+The bias is a constant term that allows the Activation Function to shift horizontally, either to the left or right, which can help model complex data patterns. It is equivalent to the product of the weight $w_{P_{k}j}^{(k)}$ and the virtual input $x_{P_{k}}^{(k)} = 1$.
 
 Using (1) in (3) and writing the bias $b_{j}^{(k)}$ in terms of the weight $w_{P_{k}j}^{(k)}$ we have:
 
 (4) $\ \ \ \ z_{j}^{(k)} = \sum_{i=0}^{P_{k}-1} w_{ij}^{(k)} \cdot y_{i}^{(k-1)} + w_{P_{k}j}^{(k)} \cdot 1$
 
-~~~C
+Follows a simple C code snippet that illustrates a way to implement the (4) equation:
+
+```C
 /* Fully-connected Neural Network:
  * every neuron in one layer is connected to every neuron in the next layer.
  */
@@ -62,7 +64,8 @@ for (int i = 0; i < Pk; ++i) {
 
 // Step 3: output calculation
 Yj = g(Zj);
-~~~
+```
+
 Regarding the partial derivatives of $y$ and $z$ we have:
 
 (5) $\ \ \ \ \frac{\partial y_{j}^{(k)}}{\partial z_{j}^{(k)}} = \frac{\partial g^{(k)}(z_{j}^{(k)})}{\partial z_{j}^{(k)}} = g'^{(k)}(z_{j}^{(k)})$
@@ -72,7 +75,7 @@ Regarding the partial derivatives of $y$ and $z$ we have:
 
 (7) $\ \ \ \ \frac{\partial z_{j}^{(k)}}{\partial y_{i}^{(k-1)}} = w_{ij}^{(k)}$
 
-Their usefulness will be clear in the following sections.
+Their usefulness will become evident in the subsequent sections.
 
 ### Activation Functions
 Activation Functions are mathematical equations that determine the output of a neural network's node and introduce non-linearity, enabling the network to model complex data patterns.
@@ -99,7 +102,7 @@ Some of the most commonly used Activation Functions and their layer-by-layer app
 | SIGMOID    | for output layer (binary classification)     |
 | SOFTMAX    | for output layer (multi-class classification)|
 
-Overview of the above-mentioned Activation Functions: definitions and derivatives for use in neural networks.
+An overview of the aforementioned Activation Functions, including their definitions and derivatives, for application in neural networks follows:
 
 | Name | Definition | Derivative |
 |--|-----|-----|
@@ -115,7 +118,7 @@ Overview of the above-mentioned Activation Functions: definitions and derivative
 
 Leaky ReLU and PReLU look identical at first, but Leaky ReLU uses a fixed small slope ($\alpha$, typically 0.01) for negative values, while PReLU learns the slope ($\beta$) during training, providing more flexibility.
 
-### Error Functions:
+### Error Functions
 Error functions, also known as Loss Functions or Cost Functions, are used to measure the difference between the predicted output of a neural network and the actual output. The goal is to minimize this difference, which is typically achieved through optimization algorithms.
 
 Common Error Functions are:
@@ -386,4 +389,22 @@ Equation (21) explains how the $E_j^{(k)}$ error propagates backward from the ou
 
 (22) $\ \ \ \ u_{ij}^{(k)} = w_{ij}^{(k)} - \eta \cdot \frac{\partial E_j^{(k)}}{\partial w_{ij}^{(k)}}$
 
-where $\eta$ is the **learning rate**, which controls the step size of the gradient descent algorithm.
+where $\eta$ is the **learning rate**, which controls the step size of the gradient descent algorithm. By applying the chain rule twice, we can express the weight update as:
+
+(23) $\ \ \ \ u_{ij}^{(k)} = w_{ij}^{(k)} - \eta \cdot \frac{\partial E_j^{(k)}}{\partial y_j^{(k)}} \cdot \frac{\partial y_j^{(k)}}{\partial z_{j}^{(k)}} \cdot \frac{\partial z_{j}^{(k)}}{\partial w_{ij}^{(k)}}$
+
+Using (5) and (6) in (23) we have:
+
+(24) $\ \ \ \ u_{ij}^{(k)} = w_{ij}^{(k)} - \eta \cdot \frac{\partial E_j^{(k)}}{\partial y_j^{(k)}} \cdot g'^{(k)}\left(z_j^{(k)}\right) \cdot y_i^{(k-1)}$
+
+The (24) is the key equation of the back-propagation algorithm. It shows that the weight update depends on the error gradient, the derivative of the activation function, and the input to the neuron. The learning rate $\eta$ controls how much we adjust the weights based on this information.
+
+For the output layer $k = L$, we have:
+
+(25) $\ \ \ \ \frac{\partial E_{j}^{L}}{\partial y_{j}^{L}} = y_{j}^{(L)} y_{j}$
+
+For the hidden layers $1 \leq k \lt L$, we have:
+
+(26) $\ \ \ \ \frac{\partial E_{j}^{k}}{\partial y_{j}^{k}} = \sum_{n=0}^{P_{k+1}-1} \frac{\partial E_{n}^{(k+1)}}{\partial y_{n}^{(k+1)}} \cdot g'^{(k+1)}\left(z_n^{(k+1)}\right) \cdot w_{jn}^{(k+1)}$
+
+The (25) and (26) equations can be used to calculate the error gradients for the output and hidden layers, respectively. The back-propagation algorithm iteratively updates the weights of the neural network using these gradients, allowing the model to learn from its errors and improve its predictions over time.
