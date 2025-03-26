@@ -382,8 +382,8 @@ int main(void) {
 ### Back-propagation
 Back-propagation is a key **learning algorithm** for artificial neural networks that calculates the gradient of the Error Function with respect to the network's weights by applying the **chain rule**. It adjusts the weights iteratively to minimize the error and improve the model's predictions. 
 
-Equation (21) describes the back-propagation of errors $E_j^{(L)}$ from the output layer to the hidden layers. On the other hand, $E_j^{(l)}$ itself is appropriate term to use for updating the weights. Using the notation $\hat{w}$ to indicate the updated weights, we have:
+Equation (21) describes the back-propagation of errors $E_j^{(L)}$ from the output layer to the hidden layers. On the other hand, $E_j^{(l)}$ itself is appropriate term to use for updating the weights. Using the notation $u$ to indicate the updated weights, we have:
 
-(22) $\ \ \ \ \hat{w}_{ij}^{(l)} = w_{ij}^{(l)} - \eta \cdot \frac{\partial E_j^{(l)}}{\partial w_{ij}^{(l)}}$
+(22) $\ \ \ \ u_{ij}^{(l)} = w_{ij}^{(l)} - \eta \cdot \frac{\partial E_j^{(l)}}{\partial w_{ij}^{(l)}}$
 
 where $\eta$ is the **learning rate**, which controls the step size of the gradient descent algorithm.
