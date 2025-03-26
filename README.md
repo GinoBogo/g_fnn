@@ -7,7 +7,7 @@ Used in thousands of applications, Feed-forward Neural Networks are fundamental 
 
 Fully-connected Neural Networks (also known as Dense Neural Networks) are a type of artificial neural network where every neuron in one layer is connected to every neuron in the next layer.
 
-### Inputs of the $j$-th neuron:
+### Inputs of the $j$-th neuron
 
 (1) $\ \ \ \ x_{ij}^{(k)} = y_{i}^{(k-1)}$
 
@@ -21,7 +21,7 @@ and:
 - $P_{k-1}$ is the number of neurons in layer $k-1$
 - $P_{k}$ is the number of neurons in layer $k$
 
-### Output of the $j$-th neuron:
+### Output of the $j$-th neuron
 
 (2) $\ \ \ \ y_{j}^{(k)} = g^{k}(z_{j}^{(k)})$
 
@@ -74,7 +74,7 @@ Regarding the partial derivatives of $y$ and $z$ we have:
 
 Their usefulness will be clear in the following sections.
 
-### Activation Functions:
+### Activation Functions
 Activation Functions are mathematical equations that determine the output of a neural network's node and introduce non-linearity, enabling the network to model complex data patterns.
 
 | Acronym | Full Name                            |
@@ -200,9 +200,9 @@ Note that, all elements in the second term of (20) are known once a forward prop
 
 ![Fig. 2](resources/images/g_ffn_fig02.png)
 
-We can generalize the (20) to any layer $l$ in the range $1 \leq l \leq L-1$. In this case, we have:
+We can generalize the (20) to any layer $k$ in the range $1 \leq k \leq L-1$. In this case, we have:
 
-(21) $\ \ \ \ \frac{\partial E_i^{(l)}}{\partial y_i^{(l)}} = \sum_{j=0}^{P_{l+1}-1} \frac{\partial E_j^{(l+1)}}{\partial y_j^{(l+1)}} \cdot g'^{(l+1)}\left(z_j^{(l+1)}\right) \cdot w_{ij}^{(l+1)}$
+(21) $\ \ \ \ \frac{\partial E_i^{(k)}}{\partial y_i^{(k)}} = \sum_{j=0}^{P_{k+1}-1} \frac{\partial E_j^{(k+1)}}{\partial y_j^{(k+1)}} \cdot g'^{(k+1)}\left(z_j^{(k+1)}\right) \cdot w_{ij}^{(k+1)}$
 
 ![Fig. 3](resources/images/g_ffn_fig03.png)
 
@@ -382,8 +382,8 @@ int main(void) {
 ### Back-propagation
 Back-propagation is a key **learning algorithm** for artificial neural networks that calculates the gradient of the Error Function with respect to the network's weights by applying the **chain rule**. It adjusts the weights iteratively to minimize the error and improve the model's predictions. 
 
-Equation (21) describes the back-propagation of errors $E_j^{(L)}$ from the output layer to the hidden layers. On the other hand, $E_j^{(l)}$ itself is appropriate term to use for updating the weights. Using the notation $u$ to indicate the updated weights, we have:
+Equation (21) explains how the $E_j^{(k)}$ error propagates backward from the output layer to the hidden layers. Additionally, $E_j^{(k)}$ is the most suitable term for updating the weights. Using the notation $u$ to represent the updated value of the weight $w$, we write:
 
-(22) $\ \ \ \ u_{ij}^{(l)} = w_{ij}^{(l)} - \eta \cdot \frac{\partial E_j^{(l)}}{\partial w_{ij}^{(l)}}$
+(22) $\ \ \ \ u_{ij}^{(k)} = w_{ij}^{(k)} - \eta \cdot \frac{\partial E_j^{(k)}}{\partial w_{ij}^{(k)}}$
 
 where $\eta$ is the **learning rate**, which controls the step size of the gradient descent algorithm.
