@@ -125,6 +125,18 @@ static void Step_Fwd(struct g_network_t *self) {
     }
 }
 
+static void Step_Bwd(struct g_network_t *self) {
+    if ((self != NULL) && self->_is_safe) {
+        const int N = self->layers.len;
+
+        for (int i = N - 1; i >= 0; --i) {
+            g_layer_t *layer = &self->layers.ptr[i];
+
+            layer->Step_Bwd(layer);
+        }
+    }
+}
+
 bool g_network_data_check(g_layers_data_t *data) {
     bool rvalue = false;
 
@@ -150,6 +162,7 @@ void g_network_link(g_network_t *self) {
         self->Destroy      = Destroy;
         self->Weights_Init = Weights_Init;
         self->Step_Fwd     = Step_Fwd;
+        self->Step_Bwd     = Step_Bwd;
     }
 }
 

@@ -143,6 +143,11 @@ static void Step_Fwd(struct g_layer_t *self) {
     }
 }
 
+static void Step_Bwd(struct g_layer_t *self) {
+    if ((self != NULL) && self->_is_safe) {
+    }
+}
+
 void g_layer_link(g_layer_t *self) {
     if (self != NULL) {
         // variables & intrinsic
@@ -153,6 +158,7 @@ void g_layer_link(g_layer_t *self) {
         self->Destroy      = Destroy;
         self->Weights_Init = Weights_Init;
         self->Step_Fwd     = Step_Fwd;
+        self->Step_Bwd     = Step_Bwd;
     }
 }
 

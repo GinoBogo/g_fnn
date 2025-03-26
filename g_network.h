@@ -23,6 +23,7 @@ typedef struct g_network_t {
     void (*Destroy)(struct g_network_t *self);
     void (*Weights_Init)(struct g_network_t *self);
     void (*Step_Fwd)(struct g_network_t *self);
+    void (*Step_Bwd)(struct g_network_t *self);
 
     // intrinsic
     bool _is_safe;

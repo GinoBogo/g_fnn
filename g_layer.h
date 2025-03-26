@@ -24,6 +24,7 @@ typedef struct g_layer_t {
     void (*Destroy)(struct g_layer_t *self);
     void (*Weights_Init)(struct g_layer_t *self);
     void (*Step_Fwd)(struct g_layer_t *self);
+    void (*Step_Bwd)(struct g_layer_t *self);
 
     // intrinsic
     bool _is_safe;
