@@ -401,7 +401,7 @@ The (24) is the key equation of the back-propagation algorithm. It shows that th
 
 For the output layer $k = L$, we have:
 
-(25) $\ \ \ \ \frac{\partial E_{j}^{L}}{\partial y_{j}^{L}} = y_{j}^{(L)} y_{j}$
+(25) $\ \ \ \ \frac{\partial E_{j}^{L}}{\partial y_{j}^{L}} = y_{j}^{(L)} - y_{j}$
 
 For the hidden layers $1 \leq k \lt L$, we have:
 
