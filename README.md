@@ -302,13 +302,11 @@ int main(void) {
             }
         } else {
             for (size_t n = 0; n < P[l]; n++) {
-                z[l][n] = 0.0f;
+                z[l][n] = w[l][n][P[l - 1]]; // Add bias term
 
                 for (size_t i = 0; i < P[l - 1]; i++) {
                     z[l][n] += y[l - 1][i] * w[l][n][i];
                 }
-
-                z[l][n] += w[l][n][P[l - 1]]; // Add bias
 
                 if (l == L - 1) {
                     // Use sigmoid for the output layer
