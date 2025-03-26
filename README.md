@@ -33,9 +33,11 @@ and:
 
 (3) $\ \ \ \ z_{j}^{(k)} = \sum_{i=0}^{P_{k}-1} w_{ij}^{(k)} \cdot x_{ij}^{(k)} + b_{j}^{(k)}$
 
-is the linear combination between inputs and weights.
+represents the linear combination of inputs, weights, and the **bias** term.
 
-Using (1) in (3) and writing the **bias** $b_{j}^{(k)}$ in terms of neuron's weight $w_{P_{k}j}^{(k)}$ we have:
+The bias is a constant term that allows the activation function to shift horizontally, either to the left or right, which can help model complex data patterns. It is equivalent to the product of the weight $w_{P_{k}j}^{(k)}$ and the virtual input $x_{P_{k}}^{(k)} = 1$.
+
+Using (1) in (3) and writing the bias $b_{j}^{(k)}$ in terms of the weight $w_{P_{k}j}^{(k)}$ we have:
 
 (4) $\ \ \ \ z_{j}^{(k)} = \sum_{i=0}^{P_{k}-1} w_{ij}^{(k)} \cdot y_{i}^{(k-1)} + w_{P_{k}j}^{(k)} \cdot 1$
 
