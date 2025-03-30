@@ -26,6 +26,8 @@ typedef struct f_matrix_t {
 
 extern float *f_matrix_row(f_matrix_t *mat, int row);
 
+extern float *f_matrix_at(f_matrix_t *mat, int row, int col);
+
 extern f_vector_t f_matrix_vector(f_matrix_t *mat, int row);
 
 // -----------------------------------------------------------------------------

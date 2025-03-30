@@ -30,6 +30,22 @@ float *f_matrix_row(f_matrix_t *mat, int row) {
     return rvalue;
 }
 
+float *f_matrix_at(f_matrix_t *mat, int row, int col) {
+    float *rvalue = NULL;
+
+    if ((mat != NULL) && (mat->ptr != NULL)) {
+        const bool chk_1 = row >= 0 && col >= 0;
+        const bool chk_2 = mat->row > row;
+        const bool chk_3 = mat->col > col;
+
+        if (chk_1 && chk_2 && chk_3) {
+            rvalue = mat->ptr + (row * mat->col + col);
+        }
+    }
+
+    return rvalue;
+}
+
 f_vector_t f_matrix_vector(f_matrix_t *mat, int row) {
     f_vector_t rvalue;
 
