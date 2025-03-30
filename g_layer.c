@@ -157,9 +157,9 @@ static void Step_Errors(struct g_layer_t *self, struct g_layer_t *next) {
                 L0_dE_dy[i] = 0.0f;
 
                 for (int j = 0; j < P1; ++j) {
-                    float *L1_w_j = f_matrix_row(&next->data->w, j);
+                    float L1_w_ij = *f_matrix_at(&next->data->w, j, i);
 
-                    L0_dE_dy[i] += L1_dE_dy[j] * L1_dY_dz[j] * L1_w_j[i];
+                    L0_dE_dy[i] += L1_dE_dy[j] * L1_dY_dz[j] * L1_w_ij;
                 }
             }
         }
