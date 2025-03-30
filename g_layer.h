@@ -22,9 +22,10 @@ typedef struct g_layer_t {
     // functions
     bool (*Create)(struct g_layer_t *self, g_layer_data_t *data, int l_id);
     void (*Destroy)(struct g_layer_t *self);
-    void (*Weights_Init)(struct g_layer_t *self);
-    void (*Step_Fwd)(struct g_layer_t *self);
-    void (*Step_Bwd)(struct g_layer_t *self);
+    void (*Init_Weights)(struct g_layer_t *self);
+    void (*Step_Forward)(struct g_layer_t *self);
+    void (*Step_Errors)(struct g_layer_t *self, struct g_layer_t *next);
+    void (*Step_Backward)(struct g_layer_t *self);
 
     // intrinsic
     bool _is_safe;

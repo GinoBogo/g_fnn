@@ -101,7 +101,7 @@ static void Destroy(struct g_layer_t *self) {
     }
 }
 
-static void Weights_Init(struct g_layer_t *self) {
+static void Init_Weights(struct g_layer_t *self) {
     if ((self != NULL) && self->_is_safe) {
         const int N = self->neurons.len;
 
@@ -114,7 +114,7 @@ static void Weights_Init(struct g_layer_t *self) {
     }
 }
 
-static void Step_Fwd(struct g_layer_t *self) {
+static void Step_Forward(struct g_layer_t *self) {
     if ((self != NULL) && self->_is_safe) {
         const int N = self->neurons.len;
 
@@ -143,7 +143,30 @@ static void Step_Fwd(struct g_layer_t *self) {
     }
 }
 
-static void Step_Bwd(struct g_layer_t *self) {
+static void Step_Errors(struct g_layer_t *self, struct g_layer_t *next) {
+    if ((self != NULL) && self->_is_safe) {
+        if ((self != next) && (next != NULL)) {
+            const int P0 = self->data->de_dy.len;
+            const int P1 = next->data->de_dy.len;
+
+            float *L0_dE_dy = self->data->de_dy.ptr;
+            float *L1_dE_dy = next->data->de_dy.ptr;
+            float *L1_dY_dz = next->data->dy_dz.ptr;
+
+            for (int i = 0; i < P0; ++i) {
+                L0_dE_dy[i] = 0.0f;
+
+                for (int j = 0; j < P1; ++j) {
+                    float *L1_w_j = f_matrix_row(&next->data->w, j);
+
+                    L0_dE_dy[i] += L1_dE_dy[j] * L1_dY_dz[j] * L1_w_j[i];
+                }
+            }
+        }
+    }
+}
+
+static void Step_Backward(struct g_layer_t *self) {
     if ((self != NULL) && self->_is_safe) {
     }
 }
@@ -154,11 +177,12 @@ void g_layer_link(g_layer_t *self) {
         __unsafe_reset(self);
 
         // functions
-        self->Create       = Create;
-        self->Destroy      = Destroy;
-        self->Weights_Init = Weights_Init;
-        self->Step_Fwd     = Step_Fwd;
-        self->Step_Bwd     = Step_Bwd;
+        self->Create        = Create;
+        self->Destroy       = Destroy;
+        self->Init_Weights  = Init_Weights;
+        self->Step_Forward  = Step_Forward;
+        self->Step_Errors   = Step_Errors;
+        self->Step_Backward = Step_Backward;
     }
 }
 

@@ -21,9 +21,10 @@ typedef struct g_network_t {
     // functions
     bool (*Create)(struct g_network_t *self, g_layers_data_t *data);
     void (*Destroy)(struct g_network_t *self);
-    void (*Weights_Init)(struct g_network_t *self);
-    void (*Step_Fwd)(struct g_network_t *self);
-    void (*Step_Bwd)(struct g_network_t *self);
+    void (*Init_Weights)(struct g_network_t *self);
+    void (*Step_Forward)(struct g_network_t *self);
+    void (*Step_Errors)(struct g_network_t *self, f_vector_t *actual_outputs);
+    void (*Step_Backward)(struct g_network_t *self);
 
     // intrinsic
     bool _is_safe;

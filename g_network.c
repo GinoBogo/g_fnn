@@ -99,7 +99,7 @@ static void Destroy(struct g_network_t *self) {
     }
 }
 
-static void Weights_Init(struct g_network_t *self) {
+static void Init_Weights(struct g_network_t *self) {
     if ((self != NULL) && self->_is_safe) {
         srand(time(NULL));
 
@@ -108,31 +108,58 @@ static void Weights_Init(struct g_network_t *self) {
         for (int i = 0; i < N; ++i) {
             g_layer_t *layer = &self->layers.ptr[i];
 
-            layer->Weights_Init(layer);
+            layer->Init_Weights(layer);
         }
     }
 }
 
-static void Step_Fwd(struct g_network_t *self) {
+static void Step_Forward(struct g_network_t *self) {
     if ((self != NULL) && self->_is_safe) {
         const int N = self->layers.len;
 
         for (int i = 0; i < N; ++i) {
             g_layer_t *layer = &self->layers.ptr[i];
 
-            layer->Step_Fwd(layer);
+            layer->Step_Forward(layer);
         }
     }
 }
 
-static void Step_Bwd(struct g_network_t *self) {
+static void Step_Errors(struct g_network_t *self, f_vector_t *actual_outputs) {
+    if ((self != NULL) && self->_is_safe) {
+        if (actual_outputs != NULL) {
+            const int L = self->layers.len;
+
+            g_layer_t *output_layer = &self->layers.ptr[L - 1];
+
+            const int N = output_layer->data->y.len;
+
+            if (N == actual_outputs->len) {
+                float *Y     = output_layer->data->y.ptr;
+                float *dE_dy = output_layer->data->de_dy.ptr;
+
+                for (int i = 0; i < N; ++i) {
+                    dE_dy[i] = Y[i] - actual_outputs->ptr[i];
+                }
+
+                for (int i = L - 2; i >= 0; --i) {
+                    g_layer_t *hidden_layer = &self->layers.ptr[i];
+
+                    hidden_layer->Step_Errors(hidden_layer, &self->layers.ptr[i + 1]);
+                }
+            }
+        }
+    }
+}
+
+static void Step_Backward(struct g_network_t *self) {
     if ((self != NULL) && self->_is_safe) {
         const int N = self->layers.len;
 
         for (int i = N - 1; i >= 0; --i) {
             g_layer_t *layer = &self->layers.ptr[i];
 
-            layer->Step_Bwd(layer);
+            layer->Step_Backward(layer);
         }
     }
 }
@@ -158,11 +185,12 @@ void g_network_link(g_network_t *self) {
         __unsafe_reset(self);
 
         // functions
-        self->Create       = Create;
-        self->Destroy      = Destroy;
-        self->Weights_Init = Weights_Init;
-        self->Step_Fwd     = Step_Fwd;
-        self->Step_Bwd     = Step_Bwd;
+        self->Create        = Create;
+        self->Destroy       = Destroy;
+        self->Init_Weights  = Init_Weights;
+        self->Step_Forward  = Step_Forward;
+        self->Step_Errors   = Step_Errors;
+        self->Step_Backward = Step_Backward;
     }
 }
 
