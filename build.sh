@@ -15,10 +15,15 @@ fi
 
 cd ./build
 
-cmake "../CmakeLists.txt" -B ./ -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+cmake "../CMakeLists.txt" -B ./ -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 cmake --build ./ --config $BUILD_TYPE
 
-cp ./compile_commands.json ../
+# Only copy compile_commands.json if it doesn't exist in parent directory or is different
+if [ -f "compile_commands.json" ]; then
+    if [ ! -f "../compile_commands.json" ] || ! cmp -s "compile_commands.json" "../compile_commands.json"; then
+        cp "compile_commands.json" "../"
+    fi
+fi
 
 echo '... Done!'
