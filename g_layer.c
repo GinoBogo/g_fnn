@@ -145,7 +145,7 @@ static void Step_Forward(struct g_layer_t *self) {
 
 static void Step_Errors(struct g_layer_t *self, struct g_layer_t *next) {
     if ((self != NULL) && self->_is_safe) {
-        if ((self != next) && (next != NULL)) {
+        if ((self != next) && (next != NULL) && next->_is_safe) {
             const int P0 = self->data->de_dy.len;
             const int P1 = next->data->de_dy.len;
 
