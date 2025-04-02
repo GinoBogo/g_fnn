@@ -9,17 +9,17 @@ Fully-connected Neural Networks (also known as Dense Neural Networks) are a type
 
 ### Inputs of the $j$-th neuron
 
-(1) $\ \ \ \ x_{ij}^{(k)} = y_{i}^{(k-1)}$
+(1) $\ \ \ \ x_{ji}^{(k)} = y_{i}^{(k-1)}$
 
 where:
 
-- $0 \leq i \lt P_{k-1}$
 - $0 \leq j \lt P_{k}$
+- $0 \leq i \lt P_{k-1}$
 
 and:
 
-- $P_{k-1}$ is the number of neurons in layer $k-1$
 - $P_{k}$ is the number of neurons in layer $k$
+- $P_{k-1}$ is the number of neurons in layer $k-1$
 
 ### Output of the $j$-th neuron
 
@@ -31,7 +31,7 @@ where:
 
 and:
 
-(3) $\ \ \ \ z_{j}^{(k)} = \sum_{i=0}^{P_{k}-1} w_{ij}^{(k)} \cdot x_{ij}^{(k)} + b_{j}^{(k)}$
+(3) $\ \ \ \ z_{j}^{(k)} = \sum_{i=0}^{P_{k}-1} w_{ji}^{(k)} \cdot x_{ji}^{(k)} + b_{j}^{(k)}$
 
 represents the linear combination of inputs, weights, and the **bias** term.
 
@@ -39,7 +39,7 @@ The bias is a constant term that allows the Activation Function to shift horizon
 
 Using (1) in (3) and writing the bias $b_{j}^{(k)}$ in terms of the weight $w_{P_{k}j}^{(k)}$ we have:
 
-(4) $\ \ \ \ z_{j}^{(k)} = \sum_{i=0}^{P_{k}-1} w_{ij}^{(k)} \cdot y_{i}^{(k-1)} + w_{P_{k}j}^{(k)} \cdot 1$
+(4) $\ \ \ \ z_{j}^{(k)} = \sum_{i=0}^{P_{k}-1} w_{ji}^{(k)} \cdot y_{i}^{(k-1)} + w_{jP_{k}}^{(k)} \cdot 1$
 
 Follows a simple C code snippet that illustrates a way to implement the (4) equation:
 
@@ -71,9 +71,9 @@ Regarding the partial derivatives of $y$ and $z$ we have:
 (5) $\ \ \ \ \frac{\partial y_{j}^{(k)}}{\partial z_{j}^{(k)}} = \frac{\partial g^{(k)}(z_{j}^{(k)})}{\partial z_{j}^{(k)}} = g'^{(k)}(z_{j}^{(k)})$
 
 
-(6) $\ \ \ \ \frac{\partial z_{j}^{(k)}}{\partial w_{ij}^{(k)}} = y_{i}^{(k-1)}$
+(6) $\ \ \ \ \frac{\partial z_{j}^{(k)}}{\partial w_{ji}^{(k)}} = y_{i}^{(k-1)}$
 
-(7) $\ \ \ \ \frac{\partial z_{j}^{(k)}}{\partial y_{i}^{(k-1)}} = w_{ij}^{(k)}$
+(7) $\ \ \ \ \frac{\partial z_{j}^{(k)}}{\partial y_{i}^{(k-1)}} = w_{ji}^{(k)}$
 
 Their usefulness will become evident in the subsequent sections.
 
@@ -189,7 +189,7 @@ By applying the same method, it is possible to determine the relationship betwee
 
 Using (7) and (16) in (17) we have:
 
-(18) $\ \ \ \ \frac{\partial E_j^{(L)}}{\partial y_i^{(L-1)}} = \frac{\partial E_j^{(L)}}{\partial y_j^{(L)}} \cdot g'^{(L)}\left(z_j^{(L)}\right) \cdot w_{ij}^{(L)}$
+(18) $\ \ \ \ \frac{\partial E_j^{(L)}}{\partial y_i^{(L-1)}} = \frac{\partial E_j^{(L)}}{\partial y_j^{(L)}} \cdot g'^{(L)}\left(z_j^{(L)}\right) \cdot w_{ji}^{(L)}$
 
 Equation (18) represents the amount of MSE variation that the $j$-th neuron in layer $L$ receives from the $i$-th neuron in layer $L-1$. However, the $i$-th neuron also supplies MSE variations to other neurons in layer $L$. Thus, the total amount of MSE variations that depend on the $i$-th neuron is:
 
@@ -197,7 +197,7 @@ Equation (18) represents the amount of MSE variation that the $j$-th neuron in l
 
 Using (17) in (19) we have:
 
-(20) $\ \ \ \ \frac{\partial E_i^{(L-1)}}{\partial y_i^{(L-1)}} = \sum_{j=0}^{P_{L-1}-1} \frac{\partial E_j^{(L)}}{\partial y_j^{(L)}} \cdot g'^{(L)}\left(z_j^{(L)}\right) \cdot w_{ij}^{(L)}$
+(20) $\ \ \ \ \frac{\partial E_i^{(L-1)}}{\partial y_i^{(L-1)}} = \sum_{j=0}^{P_{L-1}-1} \frac{\partial E_j^{(L)}}{\partial y_j^{(L)}} \cdot g'^{(L)}\left(z_j^{(L)}\right) \cdot w_{ji}^{(L)}$
 
 Note that, all elements in the second term of (20) are known once a forward propagation is performed.
 
@@ -387,17 +387,21 @@ Back-propagation is a key **learning algorithm** for artificial neural networks 
 
 Equation (21) explains how the $E_j^{(k)}$ error propagates backward from the output layer to the hidden layers. Additionally, $E_j^{(k)}$ is the most suitable term for updating the weights. Using the notation $u$ to represent the updated value of the weight $w$, we write:
 
-(22) $\ \ \ \ u_{ij}^{(k)} = w_{ij}^{(k)} - \eta \cdot \frac{\partial E_j^{(k)}}{\partial w_{ij}^{(k)}}$
+(22) $\ \ \ \ u_{ji}^{(k)} = w_{ji}^{(k)} - \eta \cdot \frac{\partial E_j^{(k)}}{\partial w_{ji}^{(k)}}$
 
 where $\eta$ is the **learning rate**, which controls the step size of the gradient descent algorithm. By applying the chain rule twice, we can express the weight update as:
 
-(23) $\ \ \ \ u_{ij}^{(k)} = w_{ij}^{(k)} - \eta \cdot \frac{\partial E_j^{(k)}}{\partial y_j^{(k)}} \cdot \frac{\partial y_j^{(k)}}{\partial z_{j}^{(k)}} \cdot \frac{\partial z_{j}^{(k)}}{\partial w_{ij}^{(k)}}$
+(23) $\ \ \ \ u_{ji}^{(k)} = w_{ji}^{(k)} - \eta \cdot \frac{\partial E_j^{(k)}}{\partial y_j^{(k)}} \cdot \frac{\partial y_j^{(k)}}{\partial z_{j}^{(k)}} \cdot \frac{\partial z_{j}^{(k)}}{\partial w_{ji}^{(k)}}$
 
 Using (5) and (6) in (23) we have:
 
-(24) $\ \ \ \ u_{ij}^{(k)} = w_{ij}^{(k)} - \eta \cdot \frac{\partial E_j^{(k)}}{\partial y_j^{(k)}} \cdot g'^{(k)}\left(z_j^{(k)}\right) \cdot y_i^{(k-1)}$
+(24) $\ \ \ \ u_{ji}^{(k)} = w_{ji}^{(k)} - \eta \cdot \frac{\partial E_j^{(k)}}{\partial y_j^{(k)}} \cdot g'^{(k)}\left(z_j^{(k)}\right) \cdot y_i^{(k-1)}$
 
-The (24) is the key equation of the back-propagation algorithm. It shows that the weight update depends on the error gradient, the derivative of the activation function, and the input to the neuron. The learning rate $\eta$ controls how much we adjust the weights based on this information.
+Using (13) in (24) we have:
+
+(25) $\ \ \ \ u_{ji}^{(k)} = w_{ji}^{(k)} - \eta \cdot \frac{\partial E_j^{(k)}}{\partial y_j^{(k)}} \cdot g'^{(k)}\left(z_j^{(k)}\right) \cdot x_{ji}^{(k)}$
+
+The (25) is the key equation of the back-propagation algorithm. It shows that the weight update depends on the error gradient, the derivative of the activation function, and the input to the neuron. The learning rate $\eta$ controls how much we adjust the weights based on this information.
 
 For the output layer $k = L$, we have:
 
@@ -405,6 +409,6 @@ For the output layer $k = L$, we have:
 
 For the hidden layers $1 \leq k \lt L$, we have:
 
-(26) $\ \ \ \ \frac{\partial E_{j}^{k}}{\partial y_{j}^{k}} = \sum_{n=0}^{P_{k+1}-1} \frac{\partial E_{n}^{(k+1)}}{\partial y_{n}^{(k+1)}} \cdot g'^{(k+1)}\left(z_n^{(k+1)}\right) \cdot w_{jn}^{(k+1)}$
+(26) $\ \ \ \ \frac{\partial E_{j}^{k}}{\partial y_{j}^{k}} = \sum_{i=0}^{P_{k+1}-1} \frac{\partial E_{i}^{(k+1)}}{\partial y_{i}^{(k+1)}} \cdot g'^{(k+1)}\left(z_i^{(k+1)}\right) \cdot w_{ji}^{(k+1)}$
 
 The (25) and (26) equations can be used to calculate the error gradients for the output and hidden layers, respectively. The back-propagation algorithm iteratively updates the weights of the neural network using these gradients, allowing the model to learn from its errors and improve its predictions over time.
