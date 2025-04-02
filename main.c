@@ -6,17 +6,28 @@
 // @author Gino Francesco Bogo
 // -----------------------------------------------------------------------------
 
-#include <stdio.h> // puts
+#include <stdio.h>  // puts
+#include <stdlib.h> // atexit
 
+#include "data_reader.h"
 #include "g_network.h"
 
 #define SIZEOF(x) ((int)(sizeof(x) / sizeof(x[0])))
 
 // -----------------------------------------------------------------------------
 
+static void cleanup_resources(void) {
+    data_reader_close();
+}
+
+// -----------------------------------------------------------------------------
+
 int main(int argc, char *argv[]) {
     (void)argc;
     (void)argv;
+
+    // Register cleanup handler
+    atexit(cleanup_resources);
 
     // -------------------------------------------------------------------------
     // network topology definition
@@ -147,14 +158,23 @@ int main(int argc, char *argv[]) {
     if (network.Create(&network, &layers_data)) {
         network.Init_Weights(&network);
 
-        // TODO: load inputs data
-        network.Step_Forward(&network);
+        // Load network inputs
+        if (!data_reader_open("network_inputs.txt")) {
+            printf("Failed to open network inputs file\n");
+            network.Destroy(&network);
+            return 1;
+        }
 
-        // TODO: load actual outputs
+        while (data_reader_next_inputs(L00_Y, SIZEOF(L00_Y))) {
+            network.Step_Forward(&network);
 
-        network.Step_Errors(&network, &actual_outputs);
+            // TODO: load actual outputs
+            network.Step_Errors(&network, &actual_outputs);
 
-        network.Step_Backward(&network);
+            network.Step_Backward(&network);
+        }
+
+        data_reader_close();
     }
 
     network.Destroy(&network);
