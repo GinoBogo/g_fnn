@@ -73,7 +73,9 @@ typedef struct g_layer_data_t {
     // backward propagation
     f_vector_t dy_dz; // layer's dy/dz derivatives
     f_vector_t de_dy; // layer's dE/dy derivatives
+    float      lr;    // learning rate
 
+    // activation function
     g_act_func_type_t af_type;
     g_act_func_call_t af_call;
     g_act_func_args_t af_args;

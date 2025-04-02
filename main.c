@@ -48,12 +48,17 @@ int main(int argc, char *argv[]) {
     g_act_func_type_t L03_AF_TYPE    = SIGMOID;
     float             L03_AF_ARGS[1] = {0.0f};
 
+    // layer 3: actual outputs
+    float L03_AO[10];
+
+    // layer data structure
     g_layer_data_t layer_data[3];
 
     for (int i = 0; i < SIZEOF(layer_data); ++i) {
         g_layer_data_reset(&layer_data[i]);
     }
 
+    // layer 1: hidden layer
     layer_data[0].x.ptr       = L00_Y;
     layer_data[0].x.len       = SIZEOF(L00_Y);
     layer_data[0].w.ptr       = (float *)L01_W;
@@ -67,6 +72,7 @@ int main(int argc, char *argv[]) {
     layer_data[0].dy_dz.len   = SIZEOF(L01_dY_dZ);
     layer_data[0].de_dy.ptr   = L01_dE_dY;
     layer_data[0].de_dy.len   = SIZEOF(L01_dE_dY);
+    layer_data[0].lr          = 0.03f;
     layer_data[0].af_type     = L01_AF_TYPE;
     layer_data[0].af_args.ptr = L01_AF_ARGS;
     layer_data[0].af_args.len = SIZEOF(L01_AF_ARGS);
@@ -84,10 +90,12 @@ int main(int argc, char *argv[]) {
     layer_data[1].dy_dz.len   = SIZEOF(L02_dY_dZ);
     layer_data[1].de_dy.ptr   = L02_dE_dY;
     layer_data[1].de_dy.len   = SIZEOF(L02_dE_dY);
+    layer_data[1].lr          = 0.02f;
     layer_data[1].af_type     = L02_AF_TYPE;
     layer_data[1].af_args.ptr = L02_AF_ARGS;
     layer_data[1].af_args.len = SIZEOF(L02_AF_ARGS);
 
+    // layer 3: output layer
     layer_data[2].x.ptr       = L02_Y;
     layer_data[2].x.len       = SIZEOF(L02_Y);
     layer_data[2].w.ptr       = (float *)L03_W;
@@ -101,10 +109,17 @@ int main(int argc, char *argv[]) {
     layer_data[2].dy_dz.len   = SIZEOF(L03_dY_dZ);
     layer_data[2].de_dy.ptr   = L03_dE_dY;
     layer_data[2].de_dy.len   = SIZEOF(L03_dE_dY);
+    layer_data[2].lr          = 0.01f;
     layer_data[2].af_type     = L03_AF_TYPE;
     layer_data[2].af_args.ptr = L03_AF_ARGS;
     layer_data[2].af_args.len = SIZEOF(L03_AF_ARGS);
 
+    // layer 3: actual outputs
+    f_vector_t actual_outputs;
+    actual_outputs.ptr = L03_AO;
+    actual_outputs.len = SIZEOF(L03_AO);
+
+    // layers data structure
     g_layers_data_t layers_data;
 
     layers_data.ptr = layer_data;
@@ -117,8 +132,14 @@ int main(int argc, char *argv[]) {
     if (network.Create(&network, &layers_data)) {
         network.Init_Weights(&network);
 
-        // TODO: load input data
+        // TODO: load inputs data
         network.Step_Forward(&network);
+
+        // TODO: load actual outputs
+
+        network.Step_Errors(&network, &actual_outputs);
+
+        network.Step_Backward(&network);
     }
 
     network.Destroy(&network);

@@ -154,9 +154,9 @@ static void Step_Errors(struct g_network_t *self, f_vector_t *actual_outputs) {
 
 static void Step_Backward(struct g_network_t *self) {
     if ((self != NULL) && self->_is_safe) {
-        const int N = self->layers.len;
+        const int L = self->layers.len;
 
-        for (int i = N - 1; i >= 0; --i) {
+        for (int i = L - 1; i >= 0; --i) {
             g_layer_t *layer = &self->layers.ptr[i];
 
             layer->Step_Backward(layer);

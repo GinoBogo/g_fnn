@@ -153,13 +153,13 @@ static void Step_Errors(struct g_layer_t *self, struct g_layer_t *next) {
             float *L1_dE_dy = next->data->de_dy.ptr;
             float *L1_dY_dz = next->data->dy_dz.ptr;
 
-            for (int i = 0; i < P0; ++i) {
-                L0_dE_dy[i] = 0.0f;
+            for (int j = 0; j < P0; ++j) {
+                L0_dE_dy[j] = 0.0f;
 
-                for (int j = 0; j < P1; ++j) {
-                    float L1_w_ij = *f_matrix_at(&next->data->w, j, i);
+                for (int i = 0; i < P1; ++i) {
+                    float L1_w_ji = *f_matrix_at(&next->data->w, i, j);
 
-                    L0_dE_dy[i] += L1_dE_dy[j] * L1_dY_dz[j] * L1_w_ij;
+                    L0_dE_dy[j] += L1_dE_dy[i] * L1_dY_dz[i] * L1_w_ji;
                 }
             }
         }
@@ -168,6 +168,25 @@ static void Step_Errors(struct g_layer_t *self, struct g_layer_t *next) {
 
 static void Step_Backward(struct g_layer_t *self) {
     if ((self != NULL) && self->_is_safe) {
+        float *dE_dy = self->data->de_dy.ptr;
+        float *dY_dz = self->data->dy_dz.ptr;
+
+        const int   P  = self->data->de_dy.len; // number of neurons
+        const int   I  = self->data->x.len;     // number of inputs (all neurons)
+        const float lr = self->data->lr;        // learning rate
+
+        for (int j = 0; j < P; ++j) {
+            const float dE_dz_j = dE_dy[j] * dY_dz[j];
+
+            float *X_j = &self->data->x.ptr[j];
+            float *W_j = f_matrix_row(&self->data->w, j);
+
+            for (int i = 0; i < I; ++i) {
+                W_j[i] -= lr * dE_dz_j * X_j[i];
+            }
+
+            W_j[I] -= lr * dE_dz_j;
+        }
     }
 }
 
