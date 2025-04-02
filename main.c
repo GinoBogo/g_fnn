@@ -9,7 +9,7 @@
 #include <stdio.h>  // puts
 #include <stdlib.h> // atexit
 
-#include "data_reader.h"
+#include "dataset_reader.h"
 #include "g_network.h"
 
 #define SIZEOF(x) ((int)(sizeof(x) / sizeof(x[0])))

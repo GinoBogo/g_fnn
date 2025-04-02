@@ -1,12 +1,12 @@
 // -----------------------------------------------------------------------------
-// @file data_reader.c
+// @file dataset_reader.c
 //
 // @date April, 2025
 //
 // @author Gino Francesco Bogo
 // -----------------------------------------------------------------------------
 
-#include "data_reader.h"
+#include "dataset_reader.h"
 
 #include <ctype.h>  // isdigit
 #include <errno.h>  // errno

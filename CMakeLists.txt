@@ -18,7 +18,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
 add_compile_options(-Wall -Wextra -pedantic)
 
 add_executable(g_fnn
-    data_reader.c
+    dataset_reader.c
     g_neuron.c
     g_layer.c
     g_network.c
