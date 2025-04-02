@@ -160,7 +160,6 @@ int main(int argc, char *argv[]) {
 
         // Load network inputs
         if (!data_reader_open("network_inputs.txt")) {
-            printf("Failed to open network inputs file\n");
             network.Destroy(&network);
             return 1;
         }

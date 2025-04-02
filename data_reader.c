@@ -20,7 +20,12 @@ static FILE *input_file = NULL;
 static void skip_invalid_chars(void) {
     int c;
     while ((c = fgetc(input_file)) != EOF) {
-        if (isdigit(c) || c == '.' || c == '-' || c == ',') {
+        if (isdigit(c)     //
+            || c == '.'    //
+            || c == '-'    //
+            || c == ','    //
+            || c == 'e'    //
+            || c == 'E') { //
             ungetc(c, input_file);
             break;
         }
