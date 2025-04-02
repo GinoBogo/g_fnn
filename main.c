@@ -18,40 +18,49 @@ int main(int argc, char *argv[]) {
     (void)argc;
     (void)argv;
 
-    // layer 0: input layer (store outputs only)
+    // -------------------------------------------------------------------------
+    // network topology definition
+    // -------------------------------------------------------------------------
+
+    // layer 0: virtual input layer (store outputs only)
     float L00_Y[7];
 
     // layer 1: hidden layer
     float             L01_W[20][SIZEOF(L00_Y) + 1];
-    float             L01_Z[20];
-    float             L01_Y[20];
-    float             L01_dY_dZ[20];
-    float             L01_dE_dY[20];
+    float             L01_Z[SIZEOF(L01_W)];
+    float             L01_Y[SIZEOF(L01_Z)];
+    float             L01_dY_dZ[SIZEOF(L01_Y)];
+    float             L01_dE_dY[SIZEOF(L01_Y)];
+    float             L01_LR         = 0.03f;
     g_act_func_type_t L01_AF_TYPE    = LEAKY_RELU;
     float             L01_AF_ARGS[1] = {0.001f};
 
     // layer 2: hidden layer
     float             L02_W[20][SIZEOF(L01_Y) + 1];
-    float             L02_Z[20];
-    float             L02_Y[20];
-    float             L02_dY_dZ[20];
-    float             L02_dE_dY[20];
+    float             L02_Z[SIZEOF(L02_W)];
+    float             L02_Y[SIZEOF(L02_Z)];
+    float             L02_dY_dZ[SIZEOF(L02_Y)];
+    float             L02_dE_dY[SIZEOF(L02_Y)];
+    float             L02_LR         = 0.02f;
     g_act_func_type_t L02_AF_TYPE    = LEAKY_RELU;
     float             L02_AF_ARGS[1] = {0.001f};
 
     // layer 3: output layer
     float             L03_W[10][SIZEOF(L02_Y) + 1];
-    float             L03_Z[10];
-    float             L03_Y[10];
-    float             L03_dY_dZ[10];
-    float             L03_dE_dY[10];
+    float             L03_Z[SIZEOF(L03_W)];
+    float             L03_Y[SIZEOF(L03_Z)];
+    float             L03_dY_dZ[SIZEOF(L03_Y)];
+    float             L03_dE_dY[SIZEOF(L03_Y)];
+    float             L03_LR         = 0.01f;
     g_act_func_type_t L03_AF_TYPE    = SIGMOID;
     float             L03_AF_ARGS[1] = {0.0f};
 
-    // layer 3: actual outputs
-    float L03_AO[10];
+    // layer 3: actual outputs (Y target)
+    float L03_YT[SIZEOF(L03_Y)];
 
+    // -------------------------------------------------------------------------
     // layer data structure
+    // -------------------------------------------------------------------------
     g_layer_data_t layer_data[3];
 
     for (int i = 0; i < SIZEOF(layer_data); ++i) {
@@ -72,11 +81,12 @@ int main(int argc, char *argv[]) {
     layer_data[0].dy_dz.len   = SIZEOF(L01_dY_dZ);
     layer_data[0].de_dy.ptr   = L01_dE_dY;
     layer_data[0].de_dy.len   = SIZEOF(L01_dE_dY);
-    layer_data[0].lr          = 0.03f;
+    layer_data[0].lr          = L01_LR;
     layer_data[0].af_type     = L01_AF_TYPE;
     layer_data[0].af_args.ptr = L01_AF_ARGS;
     layer_data[0].af_args.len = SIZEOF(L01_AF_ARGS);
 
+    // layer 2: hidden layer
     layer_data[1].x.ptr       = L01_Y;
     layer_data[1].x.len       = SIZEOF(L01_Y);
     layer_data[1].w.ptr       = (float *)L02_W;
@@ -90,7 +100,7 @@ int main(int argc, char *argv[]) {
     layer_data[1].dy_dz.len   = SIZEOF(L02_dY_dZ);
     layer_data[1].de_dy.ptr   = L02_dE_dY;
     layer_data[1].de_dy.len   = SIZEOF(L02_dE_dY);
-    layer_data[1].lr          = 0.02f;
+    layer_data[1].lr          = L02_LR;
     layer_data[1].af_type     = L02_AF_TYPE;
     layer_data[1].af_args.ptr = L02_AF_ARGS;
     layer_data[1].af_args.len = SIZEOF(L02_AF_ARGS);
@@ -109,22 +119,27 @@ int main(int argc, char *argv[]) {
     layer_data[2].dy_dz.len   = SIZEOF(L03_dY_dZ);
     layer_data[2].de_dy.ptr   = L03_dE_dY;
     layer_data[2].de_dy.len   = SIZEOF(L03_dE_dY);
-    layer_data[2].lr          = 0.01f;
+    layer_data[2].lr          = L03_LR;
     layer_data[2].af_type     = L03_AF_TYPE;
     layer_data[2].af_args.ptr = L03_AF_ARGS;
     layer_data[2].af_args.len = SIZEOF(L03_AF_ARGS);
 
     // layer 3: actual outputs
     f_vector_t actual_outputs;
-    actual_outputs.ptr = L03_AO;
-    actual_outputs.len = SIZEOF(L03_AO);
+    actual_outputs.ptr = L03_YT;
+    actual_outputs.len = SIZEOF(L03_YT);
 
+    // -------------------------------------------------------------------------
     // layers data structure
+    // -------------------------------------------------------------------------
     g_layers_data_t layers_data;
 
     layers_data.ptr = layer_data;
     layers_data.len = SIZEOF(layer_data);
 
+    // -------------------------------------------------------------------------
+    // network structure
+    // -------------------------------------------------------------------------
     g_network_t network;
 
     g_network_link(&network);

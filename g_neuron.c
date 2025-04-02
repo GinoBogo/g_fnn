@@ -264,17 +264,17 @@ static void Destroy(struct g_neuron_t *self) {
 static void Step_Z(struct g_neuron_t *self) {
     if ((self != NULL) && self->_is_safe) {
         g_layer_data_t *data = self->data;
-        const int       n    = self->n_id;
-        const int       N    = data->x.len;
+        const int       j    = self->n_id;  // j-th neuron
+        const int       P    = data->x.len; // number of inputs
 
-        float *X = data->x.ptr;
-        float *W = f_matrix_row(&data->w, n);
-        float *Z = data->z.ptr;
+        float *Xj = data->x.ptr;
+        float *Wj = f_matrix_row(&data->w, j);
+        float *Z  = data->z.ptr;
 
-        Z[n] = W[N];
+        Z[j] = Wj[P];
 
-        for (int i = 0; i < N; ++i) {
-            Z[n] += W[i] * X[i];
+        for (int i = 0; i < P; ++i) {
+            Z[j] += Wj[i] * Xj[i]; // i-th input of j-th neuron
         }
     }
 }
@@ -282,9 +282,9 @@ static void Step_Z(struct g_neuron_t *self) {
 static void Step_Y(struct g_neuron_t *self) {
     if ((self != NULL) && self->_is_safe) {
         g_layer_data_t *data = self->data;
-        const int       n    = self->n_id;
+        const int       j    = self->n_id; // j-th neuron
 
-        data->af_call(data, n);
+        data->af_call(data, j);
     }
 }
 

@@ -67,12 +67,12 @@ typedef struct g_layer_data_t {
     // forward propagation
     f_vector_t x; // neuron's inputs
     f_matrix_t w; // neuron's weights
-    f_vector_t z; // layer's weighted sums
-    f_vector_t y; // layer's outputs
+    f_vector_t z; // neuron's weighted sums
+    f_vector_t y; // neuron's outputs
 
     // backward propagation
-    f_vector_t dy_dz; // layer's dy/dz derivatives
-    f_vector_t de_dy; // layer's dE/dy derivatives
+    f_vector_t dy_dz; // neuron's dy/dz derivatives
+    f_vector_t de_dy; // neuron's dE/dy derivatives
     float      lr;    // learning rate
 
     // activation function

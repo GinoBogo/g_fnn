@@ -171,9 +171,9 @@ static void Step_Backward(struct g_layer_t *self) {
         float *dE_dy = self->data->de_dy.ptr;
         float *dY_dz = self->data->dy_dz.ptr;
 
-        const int   P  = self->data->de_dy.len; // number of neurons
-        const int   I  = self->data->x.len;     // number of inputs (all neurons)
-        const float lr = self->data->lr;        // learning rate
+        const int   P  = self->data->y.len; // number of neurons
+        const int   I  = self->data->x.len; // number of inputs (all neurons)
+        const float lr = self->data->lr;    // learning rate
 
         for (int j = 0; j < P; ++j) {
             const float dE_dz_j = dE_dy[j] * dY_dz[j];
