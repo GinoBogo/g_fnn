@@ -1,14 +1,13 @@
-# -----------------------------------------------------------------------------
 # @file dataset_7segment_led.py
 #
 # @date April, 2025
 #
 # @author Gino Francesco Bogo
-# -----------------------------------------------------------------------------
 
+import argparse
 import random
-import time
 import sys
+import time
 
 # Define the 7-segment LED patterns
 #    ▄▄▄        A
@@ -33,34 +32,50 @@ patterns = {
 
 random.seed(time.time())
 
-# Check if the required arguments are provided
-if len(sys.argv) != 2:
-    print(f"Usage: python {sys.argv[0]} <dataset_size>")
+# Parse command-line arguments
+parser = argparse.ArgumentParser(
+    description="Generate a dataset for 7-segment LED patterns."
+)
+parser.add_argument(
+    "dataset_size", type=int, help="Size of the dataset (positive integer)."
+)
+parser.add_argument(
+    "--error_max",
+    type=float,
+    default=0.0,
+    help="Maximum value of error injection to add to 1.0 and 0.0 (default: 0.0).",
+)
+args = parser.parse_args()
+
+# Validate dataset size
+if args.dataset_size <= 0:
+    print("Error: Dataset size must be a positive integer.")
     sys.exit(1)
 
-try:
-    # Get the dataset size from the arguments
-    dataset_size = int(sys.argv[1])
-    if dataset_size <= 0:
-        raise ValueError("Dataset size must be a positive integer.")
-except ValueError as e:
-    print(f"Error: {e}")
-    print(f"Usage: python {sys.argv[0]} <dataset_size>")
+# Validate error_max
+if args.error_max < 0.0:
+    print("Error: Maximum error value must be non-negative.")
     sys.exit(1)
 
 # Open the output files
 with open("network_inputs.txt", "w") as inputs_file, open(
     "actual_outputs.txt", "w"
 ) as outputs_file:
-    for _ in range(dataset_size):
+    for _ in range(args.dataset_size):
         # Generate a random digit (0-9)
         digit = random.randint(0, 9)
 
         # Get the corresponding 7-segment LED pattern
         pattern = patterns[digit]
 
-        # Convert the pattern to floats (0.0 = off, 1.0 = on)
-        inputs = [float(x) for x in pattern]
+        # Convert the pattern to floats (0.0 = off, 1.0 = on) and inject errors
+        inputs = [
+            max(
+                0.0,
+                min(1.0, float(x) + random.uniform(-args.error_max, args.error_max)),
+            )
+            for x in pattern
+        ]
 
         # Write the inputs to the file in scientific notation
         inputs_file.write(" ".join(f"{x:.4f}" for x in inputs) + "\n")
