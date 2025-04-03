@@ -77,8 +77,8 @@ with open("network_inputs.txt", "w") as inputs_file, open(
             for x in pattern
         ]
 
-        # Write the inputs to the file in scientific notation
-        inputs_file.write(" ".join(f"{x:.4f}" for x in inputs) + "\n")
+        # Write the inputs to the file in formatted notation
+        inputs_file.write(", ".join(f"{x:.4f}" for x in inputs) + "\n")
 
         # Generate the actual output
         output = [0] * 10
