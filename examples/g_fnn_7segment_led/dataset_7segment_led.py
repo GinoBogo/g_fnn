@@ -85,4 +85,4 @@ with open("network_inputs.txt", "w") as inputs_file, open(
         output[digit] = 1
 
         # Write the actual output to the file
-        outputs_file.write(" ".join(map(str, output)) + "\n")
+        outputs_file.write(", ".join(map(str, output)) + "\n")
