@@ -34,40 +34,40 @@ int main(int argc, char *argv[]) {
     // -------------------------------------------------------------------------
 
     // layer 0: virtual input layer (store outputs only)
-    float L00_Y[7];
+    float L00_Y[7] = {0.0f};
 
     // layer 1: hidden layer
-    float             L01_W[20][SIZEOF(L00_Y) + 1];
-    float             L01_Z[SIZEOF(L01_W)];
-    float             L01_Y[SIZEOF(L01_Z)];
-    float             L01_dY_dZ[SIZEOF(L01_Y)];
-    float             L01_dE_dY[SIZEOF(L01_Y)];
-    float             L01_LR         = 0.03f;
-    g_act_func_type_t L01_AF_TYPE    = LEAKY_RELU;
-    float             L01_AF_ARGS[1] = {0.001f};
+    float             L01_W[20][SIZEOF(L00_Y) + 1] = {{0.0f}};
+    float             L01_Z[SIZEOF(L01_W)]         = {0.0f};
+    float             L01_Y[SIZEOF(L01_Z)]         = {0.0f};
+    float             L01_dY_dZ[SIZEOF(L01_Y)]     = {0.0f};
+    float             L01_dE_dY[SIZEOF(L01_Y)]     = {0.0f};
+    float             L01_LR                       = 0.03f;
+    g_act_func_type_t L01_AF_TYPE                  = LEAKY_RELU;
+    float             L01_AF_ARGS[1]               = {0.001f};
 
     // layer 2: hidden layer
-    float             L02_W[20][SIZEOF(L01_Y) + 1];
-    float             L02_Z[SIZEOF(L02_W)];
-    float             L02_Y[SIZEOF(L02_Z)];
-    float             L02_dY_dZ[SIZEOF(L02_Y)];
-    float             L02_dE_dY[SIZEOF(L02_Y)];
-    float             L02_LR         = 0.02f;
-    g_act_func_type_t L02_AF_TYPE    = LEAKY_RELU;
-    float             L02_AF_ARGS[1] = {0.001f};
+    float             L02_W[20][SIZEOF(L01_Y) + 1] = {{0.0f}};
+    float             L02_Z[SIZEOF(L02_W)]         = {0.0f};
+    float             L02_Y[SIZEOF(L02_Z)]         = {0.0f};
+    float             L02_dY_dZ[SIZEOF(L02_Y)]     = {0.0f};
+    float             L02_dE_dY[SIZEOF(L02_Y)]     = {0.0f};
+    float             L02_LR                       = 0.02f;
+    g_act_func_type_t L02_AF_TYPE                  = LEAKY_RELU;
+    float             L02_AF_ARGS[1]               = {0.001f};
 
     // layer 3: output layer
-    float             L03_W[10][SIZEOF(L02_Y) + 1];
-    float             L03_Z[SIZEOF(L03_W)];
-    float             L03_Y[SIZEOF(L03_Z)];
-    float             L03_dY_dZ[SIZEOF(L03_Y)];
-    float             L03_dE_dY[SIZEOF(L03_Y)];
-    float             L03_LR         = 0.01f;
-    g_act_func_type_t L03_AF_TYPE    = SIGMOID;
-    float             L03_AF_ARGS[1] = {0.0f};
+    float             L03_W[10][SIZEOF(L02_Y) + 1] = {{0.0f}};
+    float             L03_Z[SIZEOF(L03_W)]         = {0.0f};
+    float             L03_Y[SIZEOF(L03_Z)]         = {0.0f};
+    float             L03_dY_dZ[SIZEOF(L03_Y)]     = {0.0f};
+    float             L03_dE_dY[SIZEOF(L03_Y)]     = {0.0f};
+    float             L03_LR                       = 0.01f;
+    g_act_func_type_t L03_AF_TYPE                  = SIGMOID;
+    float             L03_AF_ARGS[1]               = {0.0f};
 
     // layer 3: actual outputs (Y target)
-    float L03_YT[SIZEOF(L03_Y)];
+    float L03_YT[SIZEOF(L03_Y)] = {0.0f};
 
     // -------------------------------------------------------------------------
     // layer data structure
