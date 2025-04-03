@@ -9,15 +9,19 @@
 #include <stdio.h>  // puts
 #include <stdlib.h> // atexit
 //
-#include <dataset_reader.h>
+#include <data_reader.h>
 #include <g_network.h>
 
 #define SIZEOF(x) ((int)(sizeof(x) / sizeof(x[0])))
 
 // -----------------------------------------------------------------------------
 
+FILE *network_inputs_file = NULL;
+FILE *actual_outputs_file = NULL;
+
 static void cleanup_resources(void) {
-    dataset_reader_close();
+    data_reader_close(network_inputs_file);
+    data_reader_close(actual_outputs_file);
 }
 
 // -----------------------------------------------------------------------------
@@ -159,21 +163,32 @@ int main(int argc, char *argv[]) {
         network.Init_Weights(&network);
 
         // Load network inputs
-        if (!dataset_reader_open("network_inputs.txt")) {
+        network_inputs_file = data_reader_open("network_inputs.txt");
+        if (network_inputs_file == NULL) {
             network.Destroy(&network);
             return 1;
         }
 
-        while (dataset_reader_next_inputs(L00_Y, SIZEOF(L00_Y))) {
-            network.Step_Forward(&network);
-
-            // TODO: load actual outputs
-            network.Step_Errors(&network, &actual_outputs);
-
-            network.Step_Backward(&network);
+        // Load actual outputs
+        actual_outputs_file = data_reader_open("actual_outputs.txt");
+        if (actual_outputs_file == NULL) {
+            data_reader_close(actual_outputs_file);
+            network.Destroy(&network);
+            return 1;
         }
 
-        dataset_reader_close();
+        while (data_reader_next_values(network_inputs_file, L00_Y, SIZEOF(L00_Y))) {
+            network.Step_Forward(&network);
+
+            if (data_reader_next_values(actual_outputs_file, L03_YT, SIZEOF(L03_YT))) {
+                network.Step_Errors(&network, &actual_outputs);
+
+                network.Step_Backward(&network);
+            }
+        }
+
+        data_reader_close(network_inputs_file);
+        data_reader_close(actual_outputs_file);
     }
 
     network.Destroy(&network);

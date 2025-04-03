@@ -22,7 +22,7 @@ include_directories(
 )
 
 add_executable(g_fnn_7segment_led
-    ../dataset_reader.c
+    ../data_reader.c
     ../../src/g_neuron.c
     ../../src/g_layer.c
     ../../src/g_network.c
