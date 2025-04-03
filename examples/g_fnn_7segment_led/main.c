@@ -17,7 +17,7 @@
 // -----------------------------------------------------------------------------
 
 static void cleanup_resources(void) {
-    data_reader_close();
+    dataset_reader_close();
 }
 
 // -----------------------------------------------------------------------------
@@ -159,12 +159,12 @@ int main(int argc, char *argv[]) {
         network.Init_Weights(&network);
 
         // Load network inputs
-        if (!data_reader_open("network_inputs.txt")) {
+        if (!dataset_reader_open("network_inputs.txt")) {
             network.Destroy(&network);
             return 1;
         }
 
-        while (data_reader_next_inputs(L00_Y, SIZEOF(L00_Y))) {
+        while (dataset_reader_next_inputs(L00_Y, SIZEOF(L00_Y))) {
             network.Step_Forward(&network);
 
             // TODO: load actual outputs
@@ -173,7 +173,7 @@ int main(int argc, char *argv[]) {
             network.Step_Backward(&network);
         }
 
-        data_reader_close();
+        dataset_reader_close();
     }
 
     network.Destroy(&network);

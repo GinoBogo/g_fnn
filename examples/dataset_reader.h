@@ -13,11 +13,11 @@
 
 // -----------------------------------------------------------------------------
 
-bool data_reader_open(const char *filename);
+bool dataset_reader_open(const char *filename);
 
-void data_reader_close(void);
+void dataset_reader_close(void);
 
-bool data_reader_next_inputs(float *inputs, const int input_size);
+bool dataset_reader_next_inputs(float *inputs, const int input_size);
 
 #endif // DATA_READER_H
 

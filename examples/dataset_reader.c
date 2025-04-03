@@ -17,7 +17,7 @@
 
 static FILE *input_file = NULL;
 
-static void skip_invalid_chars(void) {
+static void __skip_invalid_chars(void) {
     int c;
     while ((c = fgetc(input_file)) != EOF) {
         if (isdigit(c)     //
@@ -32,9 +32,9 @@ static void skip_invalid_chars(void) {
     }
 }
 
-bool data_reader_open(const char *filename) {
+bool dataset_reader_open(const char *filename) {
     if (input_file != NULL) {
-        data_reader_close();
+        dataset_reader_close();
     }
 
     if (filename == NULL) {
@@ -51,14 +51,14 @@ bool data_reader_open(const char *filename) {
     return true;
 }
 
-void data_reader_close(void) {
+void dataset_reader_close(void) {
     if (input_file != NULL) {
         fclose(input_file);
         input_file = NULL;
     }
 }
 
-bool data_reader_next_inputs(float *inputs, const int input_size) {
+bool dataset_reader_next_inputs(float *inputs, const int input_size) {
     if (input_file == NULL) {
         printf("[ERROR] No file open\n");
         return false;
@@ -69,7 +69,7 @@ bool data_reader_next_inputs(float *inputs, const int input_size) {
         return false;
     }
 
-    skip_invalid_chars();
+    __skip_invalid_chars();
 
     int items_read = fscanf(input_file,
                             "%f,%f,%f,%f,%f,%f,%f",
