@@ -38,8 +38,15 @@ if len(sys.argv) != 2:
     print(f"Usage: python {sys.argv[0]} <dataset_size>")
     sys.exit(1)
 
-# Get the filename and dataset size from the arguments
-dataset_size = int(sys.argv[1])
+try:
+    # Get the dataset size from the arguments
+    dataset_size = int(sys.argv[1])
+    if dataset_size <= 0:
+        raise ValueError("Dataset size must be a positive integer.")
+except ValueError as e:
+    print(f"Error: {e}")
+    print(f"Usage: python {sys.argv[0]} <dataset_size>")
+    sys.exit(1)
 
 # Open the output files
 with open("network_inputs.txt", "w") as inputs_file, open(
@@ -56,7 +63,7 @@ with open("network_inputs.txt", "w") as inputs_file, open(
         inputs = [float(x) for x in pattern]
 
         # Write the inputs to the file in scientific notation
-        inputs_file.write(", ".join(map("{:.2e}".format, inputs)) + "\n")
+        inputs_file.write(" ".join(f"{x:.4f}" for x in inputs) + "\n")
 
         # Generate the actual output
         output = [0] * 10
