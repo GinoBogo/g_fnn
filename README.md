@@ -250,8 +250,8 @@ static float d_relu(float y) {
     return y > 0.0f ? 1.0f : 0.0f;
 }
 
-// Xavier initialization
-static void xavier_init(float *weights, int size) {
+// He initialization
+static void he_init(float *weights, int size) {
     float std_dev = sqrtf(2.0f / size);
 
     for (int i = 0; i < size; i++) {
@@ -301,7 +301,7 @@ int main(void) {
                 x[k][j] = (float *)calloc(P[k - 1], sizeof(float));
                 w[k][j] = (float *)calloc(P[k - 1] + 1, sizeof(float));
                 // Initialize weights
-                xavier_init(w[k][j], P[k - 1] + 1);
+                he_init(w[k][j], P[k - 1] + 1);
             }
         }
     }
