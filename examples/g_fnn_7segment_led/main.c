@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
         // Load actual outputs
         actual_outputs_file = data_reader_open("actual_outputs.txt");
         if (actual_outputs_file == NULL) {
-            data_reader_close(actual_outputs_file);
+            data_reader_close(network_inputs_file);
             network.Destroy(&network);
             return 1;
         }
