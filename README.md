@@ -1,7 +1,7 @@
-# Feed-forward Neural Network
+# Feedforward Neural Network
 ##### Personal notes and reflections
 
-Used in thousands of applications, Feed-forward Neural Networks are fundamental to deep learning. Their main advantage is structural flexibility, making them adaptable to various types of problems. A Feed-forward Neural Network with at least one hidden layer and sufficient neurons can approximate any continuous function, demonstrating its versatility and power as a _universal approximator_ in modeling complex behaviors. Fully-connected Neural Networks are a subset of Feed-forward Neural Networks and will be the focus of my notes. 
+Used in thousands of applications, Feedforward Neural Networks are fundamental to deep learning. Their main advantage is structural flexibility, making them adaptable to various types of problems. A Feedforward Neural Network with at least one hidden layer and sufficient neurons can approximate any continuous function, demonstrating its versatility and power as a _universal approximator_ in modeling complex behaviors. Fully-connected Neural Networks are a subset of Feedforward Neural Networks and will be the focus of my notes. 
 
 ![Fig. 0](./resources/images/g_ffn_fig00.png)
 
@@ -355,8 +355,8 @@ int main(void) {
 }
 ```
 
-### Back-propagation
-Back-propagation is a key **learning algorithm** for artificial neural networks that calculates the gradient of the Error Function with respect to the network's weights by applying the **chain rule**. It adjusts the weights iteratively to minimize the error and improve the model's predictions. 
+### Backpropagation
+Backpropagation is a key **learning algorithm** for artificial neural networks that calculates the gradient of the Error Function with respect to the network's weights by applying the **chain rule**. It adjusts the weights iteratively to minimize the error and improve the model's predictions. 
 
 Equation (21) explains how the $E_j^{(k)}$ error propagates backward from the output layer to the hidden layers. Additionally, $E_j^{(k)}$ is the most suitable term for updating the weights. Using the notation $u$ to represent the updated value of the weight $w$, we write:
 
@@ -384,9 +384,9 @@ For the hidden layers $1 \leq k \lt L$, we have:
 
 (26) $\ \ \ \ \frac{\partial E_{j}^{(k)}}{\partial y_{j}^{(k)}} = \sum_{i=0}^{P_{k+1}-1} \frac{\partial E_{i}^{(k+1)}}{\partial y_{i}^{(k+1)}} \cdot g'^{(k+1)}\left(z_i^{(k+1)}\right) \cdot w_{ji}^{(k+1)}$
 
-The (25) and (26) equations can be used to calculate the error gradients for the output and hidden layers, respectively. The back-propagation algorithm iteratively updates the weights of the neural network using these gradients, allowing the model to learn from its errors and improve its predictions over time.
+The (25) and (26) equations can be used to calculate the error gradients for the output and hidden layers, respectively. The backpropagation algorithm iteratively updates the weights of the neural network using these gradients, allowing the model to learn from its errors and improve its predictions over time.
 
-The following code completes the previous example by adding the back-propagation part:
+The following code completes the previous example by adding the backpropagation part:
 
 ```C
 // Backward pass
