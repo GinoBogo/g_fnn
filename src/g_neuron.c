@@ -46,15 +46,6 @@ float *f_matrix_at(f_matrix_t *mat, int row, int col) {
     return rvalue;
 }
 
-f_vector_t f_matrix_vector(f_matrix_t *mat, int row) {
-    f_vector_t rvalue;
-
-    rvalue.ptr = f_matrix_row(mat, row);
-    rvalue.len = mat->col;
-
-    return rvalue;
-}
-
 // -----------------------------------------------------------------------------
 
 static void __af_linear(g_layer_data_t *data, int n_id) {
