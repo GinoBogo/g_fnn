@@ -250,12 +250,21 @@ static float d_relu(float y) {
     return y > 0.0f ? 1.0f : 0.0f;
 }
 
-// He initialization
-static void he_init(float *weights, int size) {
-    float std_dev = sqrtf(2.0f / size);
+// Xavier/Glorot Uniform Initialization (SIGMOID/TANH)
+static void xavier_init(float *weights, int fan_in, int fan_out) {
+    float range = sqrtf(6.0f / (fan_in + fan_out));
 
-    for (int i = 0; i < size; i++) {
-        weights[i] = (((float)rand() / (float)RAND_MAX) * (2.0f * std_dev)) - std_dev;
+    for (int i = 0; i <= fan_in; i++) {
+        weights[i] = ((float)rand() / (float)RAND_MAX) * 2 * range - range;
+    }
+}
+
+// He Uniform Initialization (RELU)
+static void he_init(float *weights, int fan_in) {
+    float range = sqrtf(6.0f / fan_in);
+
+    for (int i = 0; i <= fan_in; i++) {
+        weights[i] = ((float)rand() / (float)RAND_MAX) * 2 * range - range;
     }
 }
 
@@ -301,7 +310,13 @@ int main(void) {
                 x[k][j] = (float *)calloc(P[k - 1], sizeof(float));
                 w[k][j] = (float *)calloc(P[k - 1] + 1, sizeof(float));
                 // Initialize weights
-                he_init(w[k][j], P[k - 1] + 1);
+                if (k == L - 1) {
+                    // Output layer
+                    xavier_init(w[k][j], P[k - 1], P[k]);
+                } else {
+                    // Hidden layers
+                    he_init(w[k][j], P[k - 1]);
+                }
             }
         }
     }
@@ -441,9 +456,9 @@ Weight initialization is the process of assigning initial values to the weights 
 
 The simplest method is **Zero Initialization**, which sets all weights to zero. While easy to implement, this approach often harms learning because symmetric weight updates prevent neurons from developing distinct features, resulting in poor model performance.
 
-Historically, the first pratical method was **Random Initialization**, where weights are sampled from a Gaussian (Normal) distribution or a Uniform distribution within small intervals, such as:
+Historically, the first practical method was **Random Initialization**, where weights are sampled from a Gaussian (Normal) distribution or a Uniform distribution within small intervals, such as:
 
-Gaussian:
+Gaussian (Normal):
 
 (27) $\ \ \ \ w_{ji}^{(k)} \sim \mathcal{N}(0, \sigma^2)$
 
@@ -457,16 +472,53 @@ Uniform, fixed range:
 
 This heuristic works well for many problems but fails to account for each layer's input/output dimensions. For example, layers with many inputs and few outputs typically require smaller weights to prevent exploding gradients, while layers with few inputs and many outputs often need larger weights to mitigate vanishing gradients.
 
-An alternative approach that demonstrated better performance in deep networks is **Xavier Initialization** (He et al., 2015), which uses a scaling factor based on the number of inputs and outputs:
+Alternative approaches that demonstrated better performance in deep networks are:
+
+- **Xavier/Glorot Initialization** (Glorot & Bengio, 2010), which uses a scaling factor based on the number of inputs and outputs:
 
 (30) $\ \ \ \ w_{ji}^{(k)} \sim \mathcal{U}(-\sqrt{\frac{6}{I + O}}, \sqrt{\frac{6}{I + O}})$
 
-where $I$ and $O$ are the number of inputs and outputs, respectively.
+(31) $\ \ \ \ w_{ji}^{(k)} \sim \mathcal{N}(0, \sqrt{\frac{2}{I + O}})$
 
-Another popular initialization method is **He Initialization** (Kaiming et al., 2015), which uses a scaling factor based on the number of inputs and outputs and the activation function used:
+where $I$ and $O$ are the number of inputs and outputs, respectively. This initialization is known to work well with Sigmoid/Tanh activation functions.
 
-(31) $\ \ \ \ w_{ji}^{(k)} \sim \mathcal{U}(-\sqrt{\frac{2}{I}}, \sqrt{\frac{2}{I}})$
+- **He Initialization** (Kaiming et al., 2015), which uses a scaling factor based on the number of inputs:
 
-where $I$ is the number of inputs.
+(32) $\ \ \ \ w_{ji}^{(k)} \sim \mathcal{U}(-\sqrt{\frac{6}{I}}, \sqrt{\frac{2}{I}})$
+
+(33) $\ \ \ \ w_{ji}^{(k)} \sim \mathcal{N}(0, \sqrt{\frac{2}{I}})$
+
+where $I$ is the number of inputs. This initialization is known to work well with ReLU/LeakyReLU activation functions.
+
+The Gaussian (Normal) distribution is computationally more expensive to sample than the Uniform distribution — typically requiring transformations like the **Box-Muller** method or approximations — but it often provides superior initialization for deep networks with many hidden layers. For example, the Box-Muller transform converts two uniform random variables into normally distributed values, ensuring statistically robust weight initialization at the cost of additional operations.
+
+```C
+#include <math.h>   // sqrtf, logf
+#include <stdlib.h> // RAND_MAX, rand
+
+// Box-Muller transform for normal distribution
+static float rand_normal(void) {
+    static float n2        = 0.0;
+    static int   n2_cached = 0;
+
+    if (!n2_cached) {
+        float x, y, r;
+        do {
+            x = 2.0f * rand() / (float)RAND_MAX - 1;
+            y = 2.0f * rand() / (float)RAND_MAX - 1;
+            r = x * x + y * y;
+        } while (r == 0.0f || r >= 1.0f);
+
+        float d   = sqrtf(-2.0f * logf(r) / r);
+        n2        = y * d;
+        n2_cached = 1;
+        return x * d;
+    } else {
+        n2_cached = 0;
+        return n2;
+    }
+}
+
+```
 
 In summary, weight initialization is a crucial step in training deep neural networks, and its choice can significantly impact the performance and convergence of the model.

@@ -26,12 +26,21 @@ static float d_relu(float y) {
     return y > 0.0f ? 1.0f : 0.0f;
 }
 
-// He initialization
-static void he_init(float *weights, int size) {
-    float std_dev = sqrtf(2.0f / size);
+// Xavier/Glorot Uniform Initialization (Sigmoid/Tanh)
+static void xavier_init(float *weights, int fan_in, int fan_out) {
+    float range = sqrtf(6.0f / (fan_in + fan_out));
 
-    for (int i = 0; i < size; i++) {
-        weights[i] = (((float)rand() / (float)RAND_MAX) * (2.0f * std_dev)) - std_dev;
+    for (int i = 0; i <= fan_in; i++) {
+        weights[i] = ((float)rand() / (float)RAND_MAX) * 2 * range - range;
+    }
+}
+
+// He Uniform Initialization (ReLU)
+static void he_init(float *weights, int fan_in) {
+    float range = sqrtf(6.0f / fan_in);
+
+    for (int i = 0; i <= fan_in; i++) {
+        weights[i] = ((float)rand() / (float)RAND_MAX) * 2 * range - range;
     }
 }
 
@@ -77,7 +86,13 @@ int main(void) {
                 x[k][j] = (float *)calloc(P[k - 1], sizeof(float));
                 w[k][j] = (float *)calloc(P[k - 1] + 1, sizeof(float));
                 // Initialize weights
-                he_init(w[k][j], P[k - 1] + 1);
+                if (k == L - 1) {
+                    // Output layer
+                    xavier_init(w[k][j], P[k - 1], P[k]);
+                } else {
+                    // Hidden layers
+                    he_init(w[k][j], P[k - 1]);
+                }
             }
         }
     }

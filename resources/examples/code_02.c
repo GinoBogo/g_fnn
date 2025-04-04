@@ -26,7 +26,7 @@ static float d_relu(float y) {
     return y > 0.0f ? 1.0f : 0.0f;
 }
 
-// He initialization
+// He initialization (for ReLU activation function)
 static void he_init(float *weights, int size) {
     float std_dev = sqrtf(2.0f / size);
 
