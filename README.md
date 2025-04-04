@@ -1,11 +1,11 @@
 # Feed-forward Neural Network
 ##### Personal notes and reflections
 
-Used in thousands of applications, Feed-forward Neural Networks are fundamental to deep learning. Their main advantage is structural flexibility, making them adaptable to various types of problems. A Feed-forward Neural Network with at least one hidden layer and sufficient neurons can approximate any continuous function, demonstrating its versatility and power as a _universal approximator_ in modeling complex behaviors. Fully-connected Neural Networks are a subset of Feed-forward Neural Networks and will be the focus of the following sections. 
+Used in thousands of applications, Feed-forward Neural Networks are fundamental to deep learning. Their main advantage is structural flexibility, making them adaptable to various types of problems. A Feed-forward Neural Network with at least one hidden layer and sufficient neurons can approximate any continuous function, demonstrating its versatility and power as a _universal approximator_ in modeling complex behaviors. Fully-connected Neural Networks are a subset of Feed-forward Neural Networks and will be the focus of my notes. 
 
 ![Fig. 0](./resources/images/g_ffn_fig00.png)
 
-Fully-connected Neural Networks (also known as Dense Neural Networks) are a type of artificial neural network in which every neuron in one layer is connected to every neuron in the next layer. However, this does not apply to the output layer, where neurons are not connected to any subsequent layer.
+Fully-connected Neural Networks, also referred to as Dense Neural Networks, are a type of artificial neural network where each neuron in one layer is connected to every neuron in the subsequent layer. However, this does not apply to the output layer, as its neurons are not connected to any following layer.
 
 ### Inputs of the $j$-th neuron
 
@@ -31,39 +31,47 @@ where:
 
 and:
 
-(3) $\ \ \ \ z_{j}^{(k)} = \sum_{i=0}^{P_{k}-1} w_{ji}^{(k)} \cdot x_{ji}^{(k)} + b_{j}^{(k)}$
+(3) $\ \ \ \ z_{j}^{(k)} = \sum_{i=0}^{P_{k-1}-1} w_{ji}^{(k)} \cdot y_{i}^{(k-1)} + b_{j}^{(k)}$
 
 represents the linear combination of inputs, weights, and the **bias** term.
 
-The bias is a constant term that allows the Activation Function to shift horizontally, either to the left or right, which can help model complex data patterns. It is equivalent to the product of the weight $w_{P_{k}j}^{(k)}$ and the virtual input $x_{P_{k}}^{(k)} = 1$.
+The bias is a constant term that allows the Activation Function to shift horizontally, either to the left or right, enabling the modeling of complex data patterns. Mathematically, it is equivalent to the product of the weight $w_{P_{k}j}^{(k)}$ and the virtual input $x_{P_{k}}^{(k)} = 1$.
 
 Using (1) in (3) and writing the bias $b_{j}^{(k)}$ in terms of the weight $w_{P_{k}j}^{(k)}$ we have:
 
-(4) $\ \ \ \ z_{j}^{(k)} = \sum_{i=0}^{P_{k}-1} w_{ji}^{(k)} \cdot y_{i}^{(k-1)} + w_{jP_{k}}^{(k)} \cdot 1$
+(4) $\ \ \ \ z_{j}^{(k)} = \sum_{i=0}^{P_{k-1}-1} w_{ji}^{(k)} \cdot x_{ji}^{(k)} + w_{jP_{k}}^{(k)} \cdot 1$
 
-Follows a simple C code snippet that illustrates a way to implement the (4) equation:
+Follows a simple C code snippet that illustrates a way to implement the equation (4):
 
 ```C
 /* Fully-connected Neural Network:
  * every neuron in one layer is connected to every neuron in the next layer.
  */
 
-float Xj[Pk];
-float Wj[Pk+1];
-float Zj;
-float Yj;
+const int Ph = 7;  // number of neurons in layer h = k-1
+const int Pk = 10; // number of neurons in layer k
+
+float X[Pk][Ph];
+float W[Pk][Ph + 1];
+float Z[Pk];
+float Y[Pk];
 
 // Step 1: load X inputs (layer k) from Y outputs (layer k-1)
-...
+// ...
 
 // Step 2: weighted sum of inputs and weights
-Zj = Wj[Pk];
-for (int i = 0; i < Pk; ++i) {
-	Zj += Wj[i] * Xj[i];
+for (int j = 0; j < Pk; ++j) {
+    Z[j] = W[j][Ph];
+
+    for (int i = 0; i < Ph; ++i) {
+        Z[j] += W[j][i] * X[j][i];
+    }
 }
 
 // Step 3: output calculation
-Yj = g(Zj);
+for (int j = 0; j < Pk; ++j) {
+    Y[j] = g(Z[j]);
+}
 ```
 
 Regarding the partial derivatives of $y$ and $z$ we have:
@@ -102,6 +110,8 @@ Some of the most commonly used Activation Functions and their layer-by-layer app
 | SIGMOID    | for output layer (binary classification)     |
 | SOFTMAX    | for output layer (multi-class classification)|
 
+Normally, the input layer is considered a _virtual layer_, as its neurons do not physically exist in the real implementation of neural networks; instead, the inputs directly feed into the first hidden layer. In a rigorous mathematical representation, the input layer does exist and consists of neurons with a single input, weights of 1.0, no bias, and a LINEAR Activation Function.
+
 An overview of the aforementioned Activation Functions, including their definitions and derivatives, for application in neural networks follows:
 
 | Name | Definition | Derivative |
@@ -119,7 +129,7 @@ An overview of the aforementioned Activation Functions, including their definiti
 Leaky ReLU and PReLU look identical at first, but Leaky ReLU uses a fixed small slope ($\alpha$, typically 0.01) for negative values, while PReLU learns the slope ($\beta$) during training, providing more flexibility.
 
 ### Error Functions
-Error functions, also known as Loss Functions or Cost Functions, are used to measure the difference between the predicted output of a neural network and the actual output. The goal is to minimize this difference, which is typically achieved through optimization algorithms.
+Error Functions, also known as Loss Functions or Cost Functions, are used to measure the difference between the **predicted output** of a neural network and the **actual output**. The goal is to minimize this difference, which is typically achieved through optimization algorithms.
 
 Common Error Functions are:
 
@@ -135,7 +145,7 @@ where:
 - $y_i$ is the actual output
 - $\hat{y_i}$ is the predicted output
 
-Next, we will focus on the **Mean Squared Error** (MSE) error function, which is calculated for the output layer neurons.
+Next, we will focus on the **Mean Squared Error** (MSE) Error Function, which is calculated for the output layer neurons.
 
 ![Fig. 1](resources/images/g_ffn_fig01.png)
 
@@ -153,13 +163,13 @@ The corresponding $n$-th **gradient** is:
 
 (9) $\ \ \ \ \frac{\partial E_n^{(L)}}{\partial y_n^{(L)}} = y_n^{(L)} - y_n$
 
-Intuitively, the gradient $\frac{\partial E}{\partial \hat{y}}$ measures how the error $E$ changes with variations in the output $\hat{y}$. Since $E(\hat{y}, y)$ is a non-negative function, a negative gradient implies that the error is decreasing. A decreasing error clearly indicates that the network training is progressing as expected.
+Intuitively, the gradient $\frac{\partial E}{\partial \hat{y}}$ measures how the error $E$ changes with variations in the output $\hat{y}$. Since common error functions like $E(\hat{y}, y)$ are non-negative, the gradient provides the direction to adjust the output to minimize the error. A decreasing error generally indicates that the network training is progressing as expected, provided the updates are correctly applied.
 
 The MSE for the output layer is:
 
 (10) $\ \ \ \ E_T^{(L)} = \sum_{n=0}^{P_L-1} E_n^{(L)}$
 
-and the $j$-th gradient for the output layer is:
+and the $j$-th gradient of the MSE is:
 
 (11) $\ \ \ \ \frac{\partial E_T^{(L)}}{\partial y_j^{(L)}} = \frac{\partial}{\partial y_j^{(L)}} \sum_{n=0}^{P_L-1} E_n^{(L)}$
 
@@ -167,7 +177,7 @@ There are not interactions between the outputs of the neurons in the output laye
 
 (12) $\ \ \ \ \frac{\partial E_T^{(L)}}{\partial y_j^{(L)}} = \sum_{n=0}^{P_L-1} \frac{\partial E_n^{(L)}}{\partial y_j^{(L)}}$
 
-Using (9) in (12) and considering that $\frac{\partial E_n^{(L)}}{\partial y_j^{(L)}} = 0$ for $j \neq n$, we have:
+Considering that $\frac{\partial E_n^{(L)}}{\partial y_j^{(L)}} = 0$ for $j \neq n$ and using (9) in (12), we have:
 
 (13) $\ \ \ \ \frac{\partial E_T^{(L)}}{\partial y_j^{(L)}} = \frac{\partial E_j^{(L)}}{\partial y_j^{(L)}} \Rightarrow y_j^{(L)} - y_j$
 
@@ -193,17 +203,17 @@ Using (7) and (16) in (17) we have:
 
 Equation (18) represents the amount of MSE variation that the $j$-th neuron in layer $L$ receives from the $i$-th neuron in layer $L-1$. However, the $i$-th neuron also supplies MSE variations to other neurons in layer $L$. Thus, the total amount of MSE variations that depend on the $i$-th neuron is:
 
-(19) $\ \ \ \ \frac{\partial E_i^{(L-1)}}{\partial y_i^{(L-1)}} = \sum_{j=0}^{P_{L-1}-1} \frac{\partial E_j^{(L)}}{\partial y_i^{(L-1)}}$
+(19) $\ \ \ \ \frac{\partial E_i^{(L-1)}}{\partial y_i^{(L-1)}} = \sum_{j=0}^{P_{L}-1} \frac{\partial E_j^{(L)}}{\partial y_i^{(L-1)}}$
 
 Using (17) in (19) we have:
 
-(20) $\ \ \ \ \frac{\partial E_i^{(L-1)}}{\partial y_i^{(L-1)}} = \sum_{j=0}^{P_{L-1}-1} \frac{\partial E_j^{(L)}}{\partial y_j^{(L)}} \cdot g'^{(L)}\left(z_j^{(L)}\right) \cdot w_{ji}^{(L)}$
+(20) $\ \ \ \ \frac{\partial E_i^{(L-1)}}{\partial y_i^{(L-1)}} = \sum_{j=0}^{P_{L}-1} \frac{\partial E_j^{(L)}}{\partial y_j^{(L)}} \cdot g'^{(L)}\left(z_j^{(L)}\right) \cdot w_{ji}^{(L)}$
 
-Note that, all elements in the second term of (20) are known once a forward propagation is performed.
+Note that, all elements in the second term of the equation (20) are known once a forward propagation step is performed. Take in mind that $\frac{\partial E_i^{(L-1)}}{\partial y_i^{(L-1)}}$ plays a similar role for the layer $L-1$ as $\frac{\partial E_T^{(L)}}{\partial y_j^{(L)}}$ - see equation (13) - does for the output layer $L$.
 
 ![Fig. 2](resources/images/g_ffn_fig02.png)
 
-We can generalize the (20) to any layer $k$ in the range $1 \leq k \leq L-1$. In this case, we have:
+We can generalize the equation (20) to any layer $k$ in the range $1 \leq k \leq L-1$. In this case, we have:
 
 (21) $\ \ \ \ \frac{\partial E_i^{(k)}}{\partial y_i^{(k)}} = \sum_{j=0}^{P_{k+1}-1} \frac{\partial E_j^{(k+1)}}{\partial y_j^{(k+1)}} \cdot g'^{(k+1)}\left(z_j^{(k+1)}\right) \cdot w_{ij}^{(k+1)}$
 
@@ -241,10 +251,10 @@ static float d_relu(float y) {
 }
 
 // Xavier initialization
-static void xavier_init(float *weights, size_t size) {
+static void xavier_init(float *weights, int size) {
     float std_dev = sqrtf(2.0f / size);
 
-    for (size_t i = 0; i < size; i++) {
+    for (int i = 0; i < size; i++) {
         weights[i] = (((float)rand() / (float)RAND_MAX) * (2.0f * std_dev)) - std_dev;
     }
 }
@@ -253,8 +263,8 @@ int main(void) {
     // Seed for random number generation
     srand(time(NULL));
 
-    const size_t L    = 4;               // number of layers
-    const size_t P[L] = {7, 20, 20, 10}; // number of neurons in each layer
+    const int L   = 4;               // number of layers
+    const int P[] = {7, 20, 20, 10}; // number of neurons in each layer
 
     // Matrices of pointers: [layer][neuron][input]
     float **x[L];
@@ -266,10 +276,10 @@ int main(void) {
     float *dy_dz[L];
 
     // Allocate memory
-    for (size_t l = 0; l < L; l++) {
+    for (int l = 0; l < L; l++) {
         x[l] = (float **)malloc(P[l] * sizeof(float *));
 
-        for (size_t n = 0; n < P[l]; n++) {
+        for (int n = 0; n < P[l]; n++) {
             if (l == 0) {
                 x[l][n] = (float *)calloc(1, sizeof(float));
             } else {
@@ -280,7 +290,7 @@ int main(void) {
         if (l > 0) {
             w[l] = (float **)malloc(P[l] * sizeof(float *));
 
-            for (size_t n = 0; n < P[l]; n++) {
+            for (int n = 0; n < P[l]; n++) {
                 w[l][n] = (float *)calloc(P[l - 1] + 1, sizeof(float));
                 // Initialize weights
                 xavier_init(w[l][n], P[l - 1] + 1);
@@ -296,20 +306,22 @@ int main(void) {
     // Fetch inputs and calculate predicted outputs
     load_network_inputs(x[0], P[0]);
 
-    for (size_t l = 0; l < L; l++) {
+    for (int l = 0; l < L; l++) {
         if (l == 0) {
             // Input layer, just copy inputs
-            for (size_t n = 0; n < P[l]; n++) {
+            for (int n = 0; n < P[l]; n++) {
                 // Assuming input is stored in x[l][n][0]
                 y[l][n] = x[l][n][0];
             }
         } else {
-            for (size_t n = 0; n < P[l]; n++) {
-                z[l][n] = w[l][n][P[l - 1]]; // Add bias term
+            for (int n = 0; n < P[l]; n++) {
+                z[l][n] = 0.0f;
 
-                for (size_t i = 0; i < P[l - 1]; i++) {
+                for (int i = 0; i < P[l - 1]; i++) {
                     z[l][n] += y[l - 1][i] * w[l][n][i];
                 }
+
+                z[l][n] += w[l][n][P[l - 1]]; // Add bias
 
                 if (l == L - 1) {
                     // Use sigmoid for the output layer
@@ -327,7 +339,7 @@ int main(void) {
     load_actual_outputs(actual_y, P[L - 1]);
 
     // Calculate dE/dy for the last layer
-    for (size_t i = 0; i < P[L - 1]; i++) {
+    for (int i = 0; i < P[L - 1]; i++) {
         // Assuming MSE as error function
         dE_dy[L - 1][i] = y[L - 1][i] - actual_y[i];
     }
@@ -335,38 +347,40 @@ int main(void) {
     free(actual_y);
 
     // Calculate dy/dz for all layers
-    for (size_t n = 0; n < P[L - 1]; n++) {
+    for (int n = 0; n < P[L - 1]; n++) {
         // Use sigmoid for the output layer
         dy_dz[L - 1][n] = d_sigmoid(y[L - 1][n]);
     }
 
-    for (size_t l = 1; l < L - 1; l++) {
-        for (size_t n = 0; n < P[l]; n++) {
+    for (int l = 1; l < L - 1; l++) {
+        for (int n = 0; n < P[l]; n++) {
             // Use ReLU for hidden layers
             dy_dz[l][n] = d_relu(y[l][n]);
         }
     }
 
     // Calculate dE/dy for previous layers
-    for (size_t l = L - 2; l > 0; l--) {
-        for (size_t i = 0; i < P[l]; i++) {
+    for (int l = L - 2; l > 0; l--) {
+        for (int i = 0; i < P[l]; i++) {
             dE_dy[l][i] = 0.0f;
 
-            for (size_t j = 0; j < P[l + 1]; j++) {
+            for (int j = 0; j < P[l + 1]; j++) {
                 dE_dy[l][i] += dE_dy[l + 1][j] * dy_dz[l + 1][j] * w[l + 1][j][i];
             }
         }
     }
 
+    // Code to update weights
+
     // Release memory
-    for (size_t l = 0; l < L; l++) {
-        for (size_t n = 0; n < P[l]; n++) {
+    for (int l = 0; l < L; l++) {
+        for (int n = 0; n < P[l]; n++) {
             free(x[l][n]);
         }
         free(x[l]);
 
         if (l > 0) {
-            for (size_t n = 0; n < P[l]; n++) {
+            for (int n = 0; n < P[l]; n++) {
                 free(w[l][n]);
             }
             free(w[l]);
@@ -405,10 +419,47 @@ The (25) is the key equation of the back-propagation algorithm. It shows that th
 
 For the output layer $k = L$, we have:
 
-(25) $\ \ \ \ \frac{\partial E_{j}^{L}}{\partial y_{j}^{L}} = y_{j}^{(L)} - y_{j}$
+(25) $\ \ \ \ \frac{\partial E_{j}^{(L)}}{\partial y_{j}^{(L)}} = y_{j}^{(L)} - y_{j}$
 
 For the hidden layers $1 \leq k \lt L$, we have:
 
-(26) $\ \ \ \ \frac{\partial E_{j}^{k}}{\partial y_{j}^{k}} = \sum_{i=0}^{P_{k+1}-1} \frac{\partial E_{i}^{(k+1)}}{\partial y_{i}^{(k+1)}} \cdot g'^{(k+1)}\left(z_i^{(k+1)}\right) \cdot w_{ji}^{(k+1)}$
+(26) $\ \ \ \ \frac{\partial E_{j}^{(k)}}{\partial y_{j}^{(k)}} = \sum_{i=0}^{P_{k+1}-1} \frac{\partial E_{i}^{(k+1)}}{\partial y_{i}^{(k+1)}} \cdot g'^{(k+1)}\left(z_i^{(k+1)}\right) \cdot w_{ji}^{(k+1)}$
 
 The (25) and (26) equations can be used to calculate the error gradients for the output and hidden layers, respectively. The back-propagation algorithm iteratively updates the weights of the neural network using these gradients, allowing the model to learn from its errors and improve its predictions over time.
+
+```C
+// Code to update weights
+
+// Calculate output layer errors (dE/dy)
+for (int i = 0; i < P[L - 1]; i++) {
+    dE_dy[L - 1][i] = y[L - 1][i] - actual_y[i];
+}
+
+// Calculate hidden layers errors
+for (int l = L - 2; l > 0; l--) {
+    for (int i = 0; i < P[l]; i++) {
+        dE_dy[l][i] = 0.0f;
+        for (int j = 0; j < P[l + 1]; j++) {
+            dE_dy[l][i] += dE_dy[l + 1][j] * dy_dz[l + 1][j] * w[l + 1][j][i];
+        }
+    }
+}
+
+// Learning rate
+const float lr[] = {0.01f, 0.01f, 0.01f, 0.01f};
+
+// Update weights
+for (int l = 1; l < L; l++) {
+    for (int j = 0; j < P[l]; j++) {
+        float delta = dE_dy[l][j] * dy_dz[l][j];
+
+        // Update bias
+        w[l][j][P[l - 1]] -= lr[l] * delta;
+
+        // Update other weights
+        for (int i = 0; i < P[l - 1]; i++) {
+            w[l][j][i] -= lr[l] * delta * y[l - 1][i];
+        }
+    }
+}
+```
