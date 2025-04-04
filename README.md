@@ -436,3 +436,37 @@ for (int k = L - 1; k > 0; k--) {
     }
 }
 ```
+### Weights Initialization
+Weight initialization is the process of assigning initial values to the weights of a neural network. Its goal is to find optimal starting values that enable efficient training and help the network converge to high accuracy. Note that each initialization with different weights may lead the network to converge to different solutions.
+
+The simplest method is **Zero Initialization**, which sets all weights to zero. While easy to implement, this approach often harms learning because symmetric weight updates prevent neurons from developing distinct features, resulting in poor model performance.
+
+Historically, the first pratical method was **Random Initialization**, where weights are sampled from a Gaussian (Normal) distribution or a Uniform distribution within small intervals, such as:
+
+Gaussian:
+
+(27) $\ \ \ \ w_{ji}^{(k)} \sim \mathcal{N}(0, \sigma^2)$
+
+Uniform, symmetric:
+
+(28) $\ \ \ \ w_{ji}^{(k)} \sim \mathcal{U}(-\sigma, \sigma)$
+
+Uniform, fixed range:
+
+(29) $\ \ \ \ w_{ji}^{(k)} \sim \mathcal{U}(-1, 1)$
+
+This heuristic works well for many problems but fails to account for each layer's input/output dimensions. For example, layers with many inputs and few outputs typically require smaller weights to prevent exploding gradients, while layers with few inputs and many outputs often need larger weights to mitigate vanishing gradients.
+
+An alternative approach that demonstrated better performance in deep networks is **Xavier Initialization** (He et al., 2015), which uses a scaling factor based on the number of inputs and outputs:
+
+(30) $\ \ \ \ w_{ji}^{(k)} \sim \mathcal{U}(-\sqrt{\frac{6}{I + O}}, \sqrt{\frac{6}{I + O}})$
+
+where $I$ and $O$ are the number of inputs and outputs, respectively.
+
+Another popular initialization method is **He Initialization** (Kaiming et al., 2015), which uses a scaling factor based on the number of inputs and outputs and the activation function used:
+
+(31) $\ \ \ \ w_{ji}^{(k)} \sim \mathcal{U}(-\sqrt{\frac{2}{I}}, \sqrt{\frac{2}{I}})$
+
+where $I$ is the number of inputs.
+
+In summary, weight initialization is a crucial step in training deep neural networks, and its choice can significantly impact the performance and convergence of the model.
