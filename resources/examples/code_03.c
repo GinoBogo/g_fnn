@@ -1,34 +1,46 @@
-// Code to update weights
+// Backward pass
+load_actual_outputs(actual_y, P[L - 1]);
 
-// Calculate output layer errors (dE/dy)
-for (int i = 0; i < P[L - 1]; i++) {
-    dE_dy[L - 1][i] = y[L - 1][i] - actual_y[i];
+// Calculate dy/dz for all layers
+for (int k = L - 1; k > 0; k--) {
+    for (int j = 0; j < P[k]; j++) {
+        dy_dz[k][j] = (k == L - 1) ? d_sigmoid(y[k][j]) : d_relu(y[k][j]);
+    }
 }
 
-// Calculate hidden layers errors
-for (int l = L - 2; l > 0; l--) {
-    for (int i = 0; i < P[l]; i++) {
-        dE_dy[l][i] = 0.0f;
-        for (int j = 0; j < P[l + 1]; j++) {
-            dE_dy[l][i] += dE_dy[l + 1][j] * dy_dz[l + 1][j] * w[l + 1][j][i];
+// Calculate dE/dy for all layers
+for (int k = L - 1; k > 0; k--) {
+    if (k == L - 1) {
+        // Output layer
+        for (int j = 0; j < P[k]; j++) {
+            dE_dy[k][j] = y[k][j] - actual_y[j];
+        }
+    } else {
+        // Hidden layers
+        for (int i = 0; i < P[k - 1]; i++) {
+            dE_dy[k][i] = 0.0f;
+
+            for (int j = 0; j < P[k]; j++) {
+                dE_dy[k][i] += dE_dy[k + 1][j] * dy_dz[k + 1][j] * w[k + 1][j][i];
+            }
         }
     }
 }
 
 // Learning rate
-const float lr[] = {0.01f, 0.01f, 0.01f, 0.01f};
+const float lr[] = {0.03f, 0.02f, 0.01f};
 
 // Update weights
-for (int l = 1; l < L; l++) {
-    for (int j = 0; j < P[l]; j++) {
-        float delta = dE_dy[l][j] * dy_dz[l][j];
+for (int k = L - 1; k > 0; k--) {
+    for (int j = 0; j < P[k]; j++) {
+        float delta = dE_dy[k][j] * dy_dz[k][j];
 
         // Update bias
-        w[l][j][P[l - 1]] -= lr[l] * delta;
+        w[k][j][P[k - 1]] -= lr[k - 1] * delta;
 
         // Update other weights
-        for (int i = 0; i < P[l - 1]; i++) {
-            w[l][j][i] -= lr[l] * delta * y[l - 1][i];
+        for (int i = 0; i < P[k - 1]; i++) {
+            w[k][j][i] -= lr[k - 1] * delta * y[k - 1][i];
         }
     }
 }
