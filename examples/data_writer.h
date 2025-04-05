@@ -14,7 +14,7 @@
 
 FILE *data_writer_open(const char *filename);
 
-void data_writer_close(FILE *file);
+void data_writer_close(FILE **file);
 
 bool data_writer_next_values(FILE *file, float *values_ptr, const int values_len);
 

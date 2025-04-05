@@ -29,9 +29,10 @@ FILE *data_writer_open(const char *filename) {
     return file;
 }
 
-void data_writer_close(FILE *file) {
-    if (file != NULL) {
-        fclose(file);
+void data_writer_close(FILE **file) {
+    if (*file != NULL) {
+        fclose(*file);
+        *file = NULL;
     }
 }
 

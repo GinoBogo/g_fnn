@@ -10,18 +10,21 @@
 #include <stdlib.h> // atexit
 //
 #include <data_reader.h>
+#include <data_writer.h>
 #include <g_network.h>
 
 #define SIZEOF(x) ((int)(sizeof(x) / sizeof(x[0])))
 
 // -----------------------------------------------------------------------------
 
-FILE *network_inputs_file = NULL;
-FILE *actual_outputs_file = NULL;
+FILE *network_inputs_file  = NULL;
+FILE *actual_outputs_file  = NULL;
+FILE *network_outputs_file = NULL;
 
 static void cleanup_resources(void) {
-    data_reader_close(network_inputs_file);
-    data_reader_close(actual_outputs_file);
+    data_reader_close(&network_inputs_file);
+    data_reader_close(&actual_outputs_file);
+    data_writer_close(&network_outputs_file);
 }
 
 // -----------------------------------------------------------------------------
@@ -46,7 +49,7 @@ int main(int argc, char *argv[]) {
     float             L01_Y[SIZEOF(L01_Z)]         = {0.0f};
     float             L01_dY_dZ[SIZEOF(L01_Y)]     = {0.0f};
     float             L01_dE_dY[SIZEOF(L01_Y)]     = {0.0f};
-    float             L01_LR                       = 0.03f;
+    float             L01_LR                       = 0.8f;
     g_act_func_type_t L01_AF_TYPE                  = LEAKY_RELU;
     float             L01_AF_ARGS[1]               = {0.001f};
 
@@ -56,7 +59,7 @@ int main(int argc, char *argv[]) {
     float             L02_Y[SIZEOF(L02_Z)]         = {0.0f};
     float             L02_dY_dZ[SIZEOF(L02_Y)]     = {0.0f};
     float             L02_dE_dY[SIZEOF(L02_Y)]     = {0.0f};
-    float             L02_LR                       = 0.02f;
+    float             L02_LR                       = 0.6f;
     g_act_func_type_t L02_AF_TYPE                  = LEAKY_RELU;
     float             L02_AF_ARGS[1]               = {0.001f};
 
@@ -66,7 +69,7 @@ int main(int argc, char *argv[]) {
     float             L03_Y[SIZEOF(L03_Z)]         = {0.0f};
     float             L03_dY_dZ[SIZEOF(L03_Y)]     = {0.0f};
     float             L03_dE_dY[SIZEOF(L03_Y)]     = {0.0f};
-    float             L03_LR                       = 0.01f;
+    float             L03_LR                       = 0.4f;
     g_act_func_type_t L03_AF_TYPE                  = SIGMOID;
     float             L03_AF_ARGS[1]               = {0.0f};
 
@@ -162,17 +165,26 @@ int main(int argc, char *argv[]) {
     if (network.Create(&network, &layers_data)) {
         network.Init_Weights(&network);
 
-        // Load network inputs
+        // network inputs stream
         network_inputs_file = data_reader_open("network_inputs.txt");
         if (network_inputs_file == NULL) {
             network.Destroy(&network);
             return 1;
         }
 
-        // Load actual outputs
+        // actual outputs stream
         actual_outputs_file = data_reader_open("actual_outputs.txt");
         if (actual_outputs_file == NULL) {
-            data_reader_close(network_inputs_file);
+            data_reader_close(&network_inputs_file);
+            network.Destroy(&network);
+            return 1;
+        }
+
+        // network outputs stream
+        network_outputs_file = data_writer_open("network_outputs.txt");
+        if (network_outputs_file == NULL) {
+            data_reader_close(&network_inputs_file);
+            data_reader_close(&actual_outputs_file);
             network.Destroy(&network);
             return 1;
         }
@@ -185,10 +197,15 @@ int main(int argc, char *argv[]) {
 
                 network.Step_Backward(&network);
             }
+
+            if (!data_writer_next_values(network_outputs_file, L03_Y, SIZEOF(L03_Y))) {
+                break;
+            }
         }
 
-        data_reader_close(network_inputs_file);
-        data_reader_close(actual_outputs_file);
+        data_reader_close(&network_inputs_file);
+        data_reader_close(&actual_outputs_file);
+        data_writer_close(&network_outputs_file);
     }
 
     network.Destroy(&network);

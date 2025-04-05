@@ -45,9 +45,10 @@ FILE *data_reader_open(const char *filename) {
     return file;
 }
 
-void data_reader_close(FILE *file) {
-    if (file != NULL) {
-        fclose(file);
+void data_reader_close(FILE **file) {
+    if (*file != NULL) {
+        fclose(*file);
+        *file = NULL;
     }
 }
 
@@ -81,8 +82,8 @@ bool data_reader_next_values(FILE *file, float *values_ptr, const int values_len
     if (items_read != values_len) {
         if (!feof(file)) {
             printf("[ERROR] Invalid input format, expected %d values per line\n", values_len);
-            return false;
         }
+        return false;
     }
 
     int c;
