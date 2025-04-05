@@ -30,18 +30,22 @@ static float d_relu(float y) {
 static void xavier_init(float *weights, int fan_in, int fan_out) {
     float range = sqrtf(6.0f / (fan_in + fan_out));
 
-    for (int i = 0; i <= fan_in; i++) {
+    for (int i = 0; i < fan_in; i++) {
         weights[i] = ((float)rand() / (float)RAND_MAX) * 2 * range - range;
     }
+
+    weights[fan_in] = 0.0f; // bias term
 }
 
 // He Uniform Initialization (ReLU)
 static void he_init(float *weights, int fan_in) {
     float range = sqrtf(6.0f / fan_in);
 
-    for (int i = 0; i <= fan_in; i++) {
+    for (int i = 0; i < fan_in; i++) {
         weights[i] = ((float)rand() / (float)RAND_MAX) * 2 * range - range;
     }
+
+    weights[fan_in] = 0.0f; // bias term
 }
 
 // Free memory if needed
