@@ -21,15 +21,17 @@ include_directories(
     ../../src
 )
 
-add_executable(g_fnn_7segment_led
-    ../data_reader.c
-    ../../src/g_neuron.c
-    ../../src/g_layer.c
-    ../../src/g_network.c
-    main.c
+add_executable(
+    "g_fnn_7segment_led"
+    "../data_reader.c"
+    "../data_writer.c"
+    "../../src/g_neuron.c"
+    "../../src/g_layer.c"
+    "../../src/g_network.c"
+    "main.c"
 )
 
-target_link_libraries(g_fnn_7segment_led m)
+target_link_libraries("g_fnn_7segment_led" m)
 
 # target_compile_definitions(g_fnn_7segment_led PUBLIC MY_MACRO=1)
 
