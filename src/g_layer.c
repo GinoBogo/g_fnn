@@ -26,15 +26,28 @@ static void __unsafe_reset(g_layer_t *self) {
     self->_is_safe = false;
 }
 
-static void __xavier_init(float *weights, int n_in, int n_out) {
-    float std_dev = sqrtf(6.0f / (n_in + n_out));
+static void __he_uniform_init(float *weights, int fan_in) {
+    const float std_dev = sqrtf(6.0f / fan_in);
 
-    for (int i = 0; i < n_in; i++) {
-        // rand() does not generate uniform random numbers [0, 1]
-        float number = (float)rand() / (float)RAND_MAX;
+    for (int i = 0; i < fan_in; i++) {
+        const float number = (float)rand() / (float)RAND_MAX;
 
         weights[i] = (number * (2.0f * std_dev)) - std_dev;
     }
+
+    weights[fan_in] = 0.0f; // bias term
+}
+
+static void __xavier_uniform_init(float *weights, int fan_in, int fan_out) {
+    const float std_dev = sqrtf(6.0f / (fan_in + fan_out));
+
+    for (int i = 0; i < fan_in; i++) {
+        const float number = (float)rand() / (float)RAND_MAX;
+
+        weights[i] = (number * (2.0f * std_dev)) - std_dev;
+    }
+
+    weights[fan_in] = 0.0f; // bias term
 }
 
 static bool Create(struct g_layer_t *self, g_layer_data_t *data, int l_id) {
@@ -103,13 +116,34 @@ static void Destroy(struct g_layer_t *self) {
 
 static void Init_Weights(struct g_layer_t *self) {
     if ((self != NULL) && self->_is_safe) {
-        const int N = self->neurons.len;
+        const int fan_in  = self->data->x.len;
+        const int fan_out = self->data->y.len;
 
-        for (int i = 0; i < N; ++i) {
+        const g_act_func_type_t af_type = self->data->af_type;
+
+        for (int i = 0; i < fan_out; ++i) {
             float *weights_ptr = f_matrix_row(&self->data->w, i);
-            int    weights_len = self->data->w.col;
 
-            __xavier_init(weights_ptr, weights_len, N);
+            switch (af_type) {
+                case RELU:
+                case LEAKY_RELU:
+                case PRELU:
+                case SWISH:
+                case ELU:
+                    __he_uniform_init(weights_ptr, fan_in);
+                    break;
+
+                case TANH:
+                case SIGMOID:
+                case SOFTMAX:
+                    __xavier_uniform_init(weights_ptr, fan_in, fan_out);
+                    break;
+                default:
+                    for (int j = 0; j <= fan_in; j++) {
+                        weights_ptr[j] = 0.0f; // weights + bias
+                    }
+                    break;
+            }
         }
     }
 }
