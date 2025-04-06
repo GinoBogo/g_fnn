@@ -97,7 +97,7 @@ static void Destroy(struct g_network_t *self) {
 
 static void Init_Weights(struct g_network_t *self) {
     if ((self != NULL) && self->_is_safe) {
-        srand(time(NULL));
+        srandom(time(NULL));
 
         const int L = self->layers.len;
 

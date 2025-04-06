@@ -10,7 +10,7 @@
 
 #include <assert.h> // assert
 #include <math.h>   // expf, sqrtf
-#include <stdlib.h> // NULL, RAND_MAX, calloc, free, rand
+#include <stdlib.h> // NULL, RAND_MAX, calloc, free, random
 
 #include "g_neuron.h"
 
@@ -30,7 +30,7 @@ static void __he_uniform_init(float *weights, int fan_in) {
     const float std_dev = sqrtf(6.0f / fan_in);
 
     for (int i = 0; i < fan_in; ++i) {
-        const float number = (float)rand() / (float)RAND_MAX;
+        const float number = (float)random() / (float)RAND_MAX;
 
         weights[i] = (number * (2.0f * std_dev)) - std_dev;
     }
@@ -42,7 +42,7 @@ static void __xavier_uniform_init(float *weights, int fan_in, int fan_out) {
     const float std_dev = sqrtf(6.0f / (fan_in + fan_out));
 
     for (int i = 0; i < fan_in; ++i) {
-        const float number = (float)rand() / (float)RAND_MAX;
+        const float number = (float)random() / (float)RAND_MAX;
 
         weights[i] = (number * (2.0f * std_dev)) - std_dev;
     }
