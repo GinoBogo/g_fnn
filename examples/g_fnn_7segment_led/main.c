@@ -9,9 +9,9 @@
 #include <stdio.h>  // puts
 #include <stdlib.h> // atexit
 //
-#include <data_reader.h>
-#include <data_writer.h>
-#include <g_network.h>
+#include "data_reader.h"
+#include "data_writer.h"
+#include "g_network.h"
 
 #define SIZEOF(x) ((int)(sizeof(x) / sizeof(x[0])))
 
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     float             L01_Y[SIZEOF(L01_Z)]         = {0.0f};
     float             L01_dY_dZ[SIZEOF(L01_Y)]     = {0.0f};
     float             L01_dE_dY[SIZEOF(L01_Y)]     = {0.0f};
-    float             L01_LR                       = 0.8f;
+    float             L01_LR                       = 0.20f;
     g_act_func_type_t L01_AF_TYPE                  = LEAKY_RELU;
     float             L01_AF_ARGS[1]               = {0.01f};
 
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
     float             L02_Y[SIZEOF(L02_Z)]         = {0.0f};
     float             L02_dY_dZ[SIZEOF(L02_Y)]     = {0.0f};
     float             L02_dE_dY[SIZEOF(L02_Y)]     = {0.0f};
-    float             L02_LR                       = 0.6f;
+    float             L02_LR                       = 0.10f;
     g_act_func_type_t L02_AF_TYPE                  = LEAKY_RELU;
     float             L02_AF_ARGS[1]               = {0.01f};
 
@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
     float             L03_Y[SIZEOF(L03_Z)]         = {0.0f};
     float             L03_dY_dZ[SIZEOF(L03_Y)]     = {0.0f};
     float             L03_dE_dY[SIZEOF(L03_Y)]     = {0.0f};
-    float             L03_LR                       = 0.4f;
+    float             L03_LR                       = 0.05f;
     g_act_func_type_t L03_AF_TYPE                  = SIGMOID;
     float             L03_AF_ARGS[1]               = {0.0f};
 
