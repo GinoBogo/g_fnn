@@ -91,7 +91,7 @@ static void __af_leaky_relu(g_layer_data_t *data, int n_id) {
 
     float *dY_dZ = &data->dy_dz.ptr[n_id];
 
-    *dY_dZ = *Z > 0.0f ? alpha : 0.0f;
+    *dY_dZ = *Z > 0.0f ? 1.0f : alpha;
 }
 
 static void __af_prelu(g_layer_data_t *data, int n_id) {
@@ -104,7 +104,7 @@ static void __af_prelu(g_layer_data_t *data, int n_id) {
 
     float *dY_dZ = &data->dy_dz.ptr[n_id];
 
-    *dY_dZ = *Z > 0.0f ? beta : 0.0f;
+    *dY_dZ = *Z > 0.0f ? 1.0f : beta;
 }
 
 static void __af_swish(g_layer_data_t *data, int n_id) {
@@ -252,25 +252,25 @@ static void Destroy(struct g_neuron_t *self) {
     }
 }
 
-static void Step_Z(struct g_neuron_t *self) {
+static void Step_Forward_Z(struct g_neuron_t *self) {
     if ((self != NULL) && self->_is_safe) {
         g_layer_data_t *data = self->data;
         const int       j    = self->n_id;  // j-th neuron
-        const int       P    = data->x.len; // number of inputs
+        const int       N    = data->x.len; // number of inputs
 
         float *Xj = data->x.ptr;
         float *Wj = f_matrix_row(&data->w, j);
         float *Z  = data->z.ptr;
 
-        Z[j] = Wj[P];
+        Z[j] = Wj[N]; // bias of j-th neuron
 
-        for (int i = 0; i < P; ++i) {
+        for (int i = 0; i < N; ++i) {
             Z[j] += Wj[i] * Xj[i]; // i-th input of j-th neuron
         }
     }
 }
 
-static void Step_Y(struct g_neuron_t *self) {
+static void Step_Forward_Y(struct g_neuron_t *self) {
     if ((self != NULL) && self->_is_safe) {
         g_layer_data_t *data = self->data;
         const int       j    = self->n_id; // j-th neuron
@@ -285,19 +285,19 @@ void g_neuron_link(g_neuron_t *self) {
         __unsafe_reset(self);
 
         // functions
-        self->Create  = Create;
-        self->Destroy = Destroy;
-        self->Step_Z  = Step_Z;
-        self->Step_Y  = Step_Y;
+        self->Create         = Create;
+        self->Destroy        = Destroy;
+        self->Step_Forward_Z = Step_Forward_Z;
+        self->Step_Forward_Y = Step_Forward_Y;
     }
 }
 
 bool g_neuron_data_check(g_layer_data_t *data, int n_id) {
-    bool rvalue = false;
+    bool rvalue = data != NULL;
 
-    if (data != NULL) {
-        rvalue |= n_id >= 0;
-        rvalue &= data->z.len > n_id;
+    if (rvalue) {
+        rvalue = rvalue && (n_id >= 0);
+        rvalue = rvalue && (data->z.len > n_id); // prevent out-of-bounds access to Z (and then W and Y)
     }
 
     return rvalue;

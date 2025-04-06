@@ -62,15 +62,16 @@ typedef struct g_act_func_args_t {
 // -----------------------------------------------------------------------------
 
 typedef struct g_layer_data_t {
+    int l_id; // layer index
     // forward propagation
-    f_vector_t x; // neuron's inputs
-    f_matrix_t w; // neuron's weights
-    f_vector_t z; // neuron's weighted sums
-    f_vector_t y; // neuron's outputs
+    f_vector_t x; // X[neuron]
+    f_matrix_t w; // W[layer][neuron]
+    f_vector_t z; // Z[layer]
+    f_vector_t y; // Y[layer]
 
     // backward propagation
-    f_vector_t dy_dz; // neuron's dy/dz derivatives
-    f_vector_t de_dy; // neuron's dE/dy derivatives
+    f_vector_t dy_dz; // dY/dZ[layer]
+    f_vector_t de_dy; // dE/dY[layer]
     float      lr;    // learning rate
 
     // activation function
@@ -94,8 +95,8 @@ typedef struct g_neuron_t {
     // functions
     bool (*Create)(struct g_neuron_t *self, g_layer_data_t *data, int n_id);
     void (*Destroy)(struct g_neuron_t *self);
-    void (*Step_Z)(struct g_neuron_t *self);
-    void (*Step_Y)(struct g_neuron_t *self);
+    void (*Step_Forward_Z)(struct g_neuron_t *self);
+    void (*Step_Forward_Y)(struct g_neuron_t *self);
 
     // intrinsic
     bool _is_safe;

@@ -24,30 +24,28 @@ static void __unsafe_reset(g_network_t *self) {
 }
 
 static bool Create(struct g_network_t *self, g_layers_data_t *data) {
-    bool rvalue = false;
+    bool rvalue = self != NULL;
 
-    if (self != NULL) {
+    if (rvalue) {
         rvalue = g_network_data_check(data);
 
+        const int L = rvalue ? data->len : 0;
+
         if (rvalue) {
-            const int N = data->len;
+            self->layers.ptr = calloc(L, sizeof(g_layer_t));
+            self->layers.len = L;
 
-            self->layers.ptr = calloc(N, sizeof(g_layer_t));
-            self->layers.len = N;
-
-            rvalue &= self->layers.ptr != NULL;
+            rvalue = self->layers.ptr != NULL;
         }
 
         if (rvalue) {
-            const int N = data->len;
-
-            for (int l = 0; l < N; ++l) {
-                g_layer_t      *layer      = &self->layers.ptr[l];
-                g_layer_data_t *layer_data = &data->ptr[l];
+            for (int k = 0; k < L; ++k) {
+                g_layer_t      *layer      = &self->layers.ptr[k];
+                g_layer_data_t *layer_data = &data->ptr[k];
 
                 g_layer_link(layer);
 
-                rvalue &= layer->Create(layer, layer_data, l);
+                rvalue = layer->Create(layer, layer_data, k);
 
                 if (!rvalue) {
                     break; // exit loop if layer creation fails
@@ -56,9 +54,7 @@ static bool Create(struct g_network_t *self, g_layers_data_t *data) {
         }
 
         if (rvalue) {
-            const int N = data->len;
-
-            for (int i = 0, j = 1; j < N; ++i, ++j) {
+            for (int i = 0, j = 1; j < L; ++i, ++j) {
                 f_vector_t *Yi = &data->ptr[i].y;
                 f_vector_t *Xj = &data->ptr[j].x;
 
@@ -82,10 +78,10 @@ static bool Create(struct g_network_t *self, g_layers_data_t *data) {
 static void Destroy(struct g_network_t *self) {
     if (self != NULL) {
         if (self->layers.ptr != NULL) {
-            const int N = self->layers.len;
+            const int L = self->layers.len;
 
-            for (int i = 0; i < N; ++i) {
-                g_layer_t *layer = &self->layers.ptr[i];
+            for (int k = 0; k < L; ++k) {
+                g_layer_t *layer = &self->layers.ptr[k];
 
                 if (layer != NULL) {
                     layer->Destroy(layer);
@@ -103,10 +99,10 @@ static void Init_Weights(struct g_network_t *self) {
     if ((self != NULL) && self->_is_safe) {
         srand(time(NULL));
 
-        const int N = self->layers.len;
+        const int L = self->layers.len;
 
-        for (int i = 0; i < N; ++i) {
-            g_layer_t *layer = &self->layers.ptr[i];
+        for (int k = 0; k < L; ++k) {
+            g_layer_t *layer = &self->layers.ptr[k];
 
             layer->Init_Weights(layer);
         }
@@ -115,12 +111,12 @@ static void Init_Weights(struct g_network_t *self) {
 
 static void Step_Forward(struct g_network_t *self) {
     if ((self != NULL) && self->_is_safe) {
-        const int N = self->layers.len;
+        const int L = self->layers.len;
 
-        for (int i = 0; i < N; ++i) {
-            g_layer_t *layer = &self->layers.ptr[i];
+        for (int k = 0; k < L; ++k) {
+            g_layer_t *layer_k = &self->layers.ptr[k];
 
-            layer->Step_Forward(layer);
+            layer_k->Step_Forward(layer_k);
         }
     }
 }
@@ -130,22 +126,23 @@ static void Step_Errors(struct g_network_t *self, f_vector_t *actual_outputs) {
         if (actual_outputs != NULL) {
             const int L = self->layers.len;
 
-            g_layer_t *output_layer = &self->layers.ptr[L - 1];
+            g_layer_t *layer_L = &self->layers.ptr[L - 1];
 
-            const int N = output_layer->data->y.len;
+            const int P = layer_L->data->y.len;
 
-            if (N == actual_outputs->len) {
-                float *Y     = output_layer->data->y.ptr;
-                float *dE_dy = output_layer->data->de_dy.ptr;
+            if (P == actual_outputs->len) {
+                float *Y_L     = layer_L->data->y.ptr;
+                float *dE_dy_L = layer_L->data->de_dy.ptr;
 
-                for (int i = 0; i < N; ++i) {
-                    dE_dy[i] = Y[i] - actual_outputs->ptr[i];
+                for (int j = 0; j < P; ++j) {
+                    dE_dy_L[j] = Y_L[j] - actual_outputs->ptr[j];
                 }
 
-                for (int i = L - 2; i >= 0; --i) {
-                    g_layer_t *hidden_layer = &self->layers.ptr[i];
+                for (int k = L - 2; k >= 0; --k) {
+                    g_layer_t *layer_k0 = &self->layers.ptr[k + 0];
+                    g_layer_t *layer_k1 = &self->layers.ptr[k + 1];
 
-                    hidden_layer->Step_Errors(hidden_layer, &self->layers.ptr[i + 1]);
+                    layer_k0->Step_Errors(layer_k0, layer_k1);
                 }
             }
         }
@@ -156,24 +153,20 @@ static void Step_Backward(struct g_network_t *self) {
     if ((self != NULL) && self->_is_safe) {
         const int L = self->layers.len;
 
-        for (int i = L - 1; i >= 0; --i) {
-            g_layer_t *layer = &self->layers.ptr[i];
+        for (int k = L - 1; k >= 0; --k) {
+            g_layer_t *layer_k = &self->layers.ptr[k];
 
-            layer->Step_Backward(layer);
+            layer_k->Step_Backward(layer_k);
         }
     }
 }
 
 bool g_network_data_check(g_layers_data_t *data) {
-    bool rvalue = false;
+    bool rvalue = data != NULL;
 
-    if (data != NULL) {
-        rvalue |= data != NULL;
-
-        if (rvalue) {
-            rvalue &= data->ptr != NULL;
-            rvalue &= data->len > 0;
-        }
+    if (rvalue) {
+        rvalue = rvalue && (data->ptr != NULL);
+        rvalue = rvalue && (data->len > 0);
     }
 
     return rvalue;

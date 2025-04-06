@@ -28,6 +28,8 @@ static void cleanup_resources(void) {
 }
 
 // -----------------------------------------------------------------------------
+// Entry Point
+// -----------------------------------------------------------------------------
 
 int main(int argc, char *argv[]) {
     (void)argc;
@@ -51,7 +53,7 @@ int main(int argc, char *argv[]) {
     float             L01_dE_dY[SIZEOF(L01_Y)]     = {0.0f};
     float             L01_LR                       = 0.8f;
     g_act_func_type_t L01_AF_TYPE                  = LEAKY_RELU;
-    float             L01_AF_ARGS[1]               = {0.001f};
+    float             L01_AF_ARGS[1]               = {0.01f};
 
     // layer 2: hidden layer
     float             L02_W[20][SIZEOF(L01_Y) + 1] = {{0.0f}};
@@ -61,7 +63,7 @@ int main(int argc, char *argv[]) {
     float             L02_dE_dY[SIZEOF(L02_Y)]     = {0.0f};
     float             L02_LR                       = 0.6f;
     g_act_func_type_t L02_AF_TYPE                  = LEAKY_RELU;
-    float             L02_AF_ARGS[1]               = {0.001f};
+    float             L02_AF_ARGS[1]               = {0.01f};
 
     // layer 3: output layer
     float             L03_W[10][SIZEOF(L02_Y) + 1] = {{0.0f}};
@@ -83,12 +85,13 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < SIZEOF(layer_data); ++i) {
         g_layer_data_reset(&layer_data[i]);
+        layer_data[i].l_id = i;
     }
 
     // layer 1: hidden layer
     layer_data[0].x.ptr       = L00_Y;
     layer_data[0].x.len       = SIZEOF(L00_Y);
-    layer_data[0].w.ptr       = (float *)L01_W;
+    layer_data[0].w.ptr       = &L01_W[0][0];
     layer_data[0].w.row       = SIZEOF(L01_W);
     layer_data[0].w.col       = SIZEOF(L01_W[0]);
     layer_data[0].z.ptr       = L01_Z;
@@ -107,7 +110,7 @@ int main(int argc, char *argv[]) {
     // layer 2: hidden layer
     layer_data[1].x.ptr       = L01_Y;
     layer_data[1].x.len       = SIZEOF(L01_Y);
-    layer_data[1].w.ptr       = (float *)L02_W;
+    layer_data[1].w.ptr       = &L02_W[0][0];
     layer_data[1].w.row       = SIZEOF(L02_W);
     layer_data[1].w.col       = SIZEOF(L02_W[0]);
     layer_data[1].z.ptr       = L02_Z;
@@ -126,7 +129,7 @@ int main(int argc, char *argv[]) {
     // layer 3: output layer
     layer_data[2].x.ptr       = L02_Y;
     layer_data[2].x.len       = SIZEOF(L02_Y);
-    layer_data[2].w.ptr       = (float *)L03_W;
+    layer_data[2].w.ptr       = &L03_W[0][0];
     layer_data[2].w.row       = SIZEOF(L03_W);
     layer_data[2].w.col       = SIZEOF(L03_W[0]);
     layer_data[2].z.ptr       = L03_Z;
@@ -152,7 +155,7 @@ int main(int argc, char *argv[]) {
     // -------------------------------------------------------------------------
     g_layers_data_t layers_data;
 
-    layers_data.ptr = layer_data;
+    layers_data.ptr = &layer_data[0];
     layers_data.len = SIZEOF(layer_data);
 
     // -------------------------------------------------------------------------
