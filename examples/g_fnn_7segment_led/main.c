@@ -15,14 +15,18 @@
 
 #define SIZEOF(x) ((int)(sizeof(x) / sizeof(x[0])))
 
+#define TRAINING_MODE 0
+
 // -----------------------------------------------------------------------------
 
-FILE *network_inputs_file  = NULL;
+FILE *network_weights_file = NULL;
+FILE *network_dataset_file = NULL;
 FILE *actual_outputs_file  = NULL;
 FILE *network_outputs_file = NULL;
 
 static void cleanup_resources(void) {
-    data_reader_close(&network_inputs_file);
+    data_reader_close(&network_weights_file);
+    data_reader_close(&network_dataset_file);
     data_reader_close(&actual_outputs_file);
     data_writer_close(&network_outputs_file);
 }
@@ -51,7 +55,7 @@ int main(int argc, char *argv[]) {
     float             L01_Y[SIZEOF(L01_Z)]         = {0.0f};
     float             L01_dY_dZ[SIZEOF(L01_Y)]     = {0.0f};
     float             L01_dE_dY[SIZEOF(L01_Y)]     = {0.0f};
-    float             L01_LR                       = 0.20f;
+    float             L01_LR                       = 0.01f;
     g_act_func_type_t L01_AF_TYPE                  = LEAKY_RELU;
     float             L01_AF_ARGS[1]               = {0.01f};
 
@@ -61,7 +65,7 @@ int main(int argc, char *argv[]) {
     float             L02_Y[SIZEOF(L02_Z)]         = {0.0f};
     float             L02_dY_dZ[SIZEOF(L02_Y)]     = {0.0f};
     float             L02_dE_dY[SIZEOF(L02_Y)]     = {0.0f};
-    float             L02_LR                       = 0.10f;
+    float             L02_LR                       = 0.02f;
     g_act_func_type_t L02_AF_TYPE                  = LEAKY_RELU;
     float             L02_AF_ARGS[1]               = {0.01f};
 
@@ -71,21 +75,23 @@ int main(int argc, char *argv[]) {
     float             L03_Y[SIZEOF(L03_Z)]         = {0.0f};
     float             L03_dY_dZ[SIZEOF(L03_Y)]     = {0.0f};
     float             L03_dE_dY[SIZEOF(L03_Y)]     = {0.0f};
-    float             L03_LR                       = 0.05f;
+    float             L03_LR                       = 0.03f;
     g_act_func_type_t L03_AF_TYPE                  = SIGMOID;
     float             L03_AF_ARGS[1]               = {0.0f};
 
+#if TRAINING_MODE
     // layer 3: actual outputs (Y target)
     float L03_YT[SIZEOF(L03_Y)] = {0.0f};
+#endif
 
     // -------------------------------------------------------------------------
     // page structure
     // -------------------------------------------------------------------------
     g_page_t page[3];
 
-    for (int i = 0; i < SIZEOF(page); ++i) {
-        g_layer_page_reset(&page[i]);
-        page[i].l_id = i;
+    for (int k = 0; k < SIZEOF(page); ++k) {
+        g_layer_page_reset(&page[k]);
+        page[k].l_id = k;
     }
 
     // layer 1: hidden layer
@@ -145,10 +151,26 @@ int main(int argc, char *argv[]) {
     page[2].af_args.ptr = L03_AF_ARGS;
     page[2].af_args.len = SIZEOF(L03_AF_ARGS);
 
+#if TRAINING_MODE
     // layer 3: actual outputs
     f_vector_t actual_outputs;
     actual_outputs.ptr = &L03_YT[0];
     actual_outputs.len = SIZEOF(L03_YT);
+#else
+    // load weights from file
+    network_weights_file = data_reader_open("network_weights.txt");
+    if (network_weights_file == NULL) {
+        return 1;
+    }
+
+    for (int k = 0; k < SIZEOF(page); ++k) {
+        if (!data_reader_next_matrix(network_weights_file, &page[k].w)) {
+            data_reader_close(&network_weights_file);
+            return 1;
+        }
+    }
+    data_reader_close(&network_weights_file);
+#endif
 
     // -------------------------------------------------------------------------
     // pages structure
@@ -166,15 +188,16 @@ int main(int argc, char *argv[]) {
     g_network_link(&network);
 
     if (network.Create(&network, &pages)) {
+#if TRAINING_MODE
         network.Init_Weights(&network);
-
-        // network inputs stream
-        network_inputs_file = data_reader_open("network_inputs.txt");
-        if (network_inputs_file == NULL) {
+#endif
+        // network dataset stream
+        network_dataset_file = data_reader_open("network_dataset.txt");
+        if (network_dataset_file == NULL) {
             network.Destroy(&network);
             return 1;
         }
-
+#if TRAINING_MODE
         // actual outputs stream
         actual_outputs_file = data_reader_open("actual_outputs.txt");
         if (actual_outputs_file == NULL) {
@@ -182,31 +205,31 @@ int main(int argc, char *argv[]) {
             network.Destroy(&network);
             return 1;
         }
-
+#endif
         // network outputs stream
         network_outputs_file = data_writer_open("network_outputs.txt");
         if (network_outputs_file == NULL) {
-            data_reader_close(&network_inputs_file);
+            data_reader_close(&network_dataset_file);
             data_reader_close(&actual_outputs_file);
             network.Destroy(&network);
             return 1;
         }
 
-        while (data_reader_next_values(network_inputs_file, L00_Y, SIZEOF(L00_Y))) {
+        while (data_reader_next_values(network_dataset_file, L00_Y, SIZEOF(L00_Y))) {
             network.Step_Forward(&network);
-
+#if TRAINING_MODE
             if (data_reader_next_values(actual_outputs_file, L03_YT, SIZEOF(L03_YT))) {
                 network.Step_Errors(&network, &actual_outputs);
 
                 network.Step_Backward(&network);
             }
-
+#endif
             if (!data_writer_next_values(network_outputs_file, L03_Y, SIZEOF(L03_Y))) {
                 break;
             }
         }
 
-        data_reader_close(&network_inputs_file);
+        data_reader_close(&network_dataset_file);
         data_reader_close(&actual_outputs_file);
         data_writer_close(&network_outputs_file);
     }
