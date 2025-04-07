@@ -14,40 +14,6 @@
 
 // -----------------------------------------------------------------------------
 
-float *f_matrix_row(f_matrix_t *mat, int row) {
-    float *rvalue = NULL;
-
-    if ((mat != NULL) && (mat->ptr != NULL)) {
-        const bool chk_1 = row >= 0;
-        const bool chk_2 = mat->row > row;
-        const bool chk_3 = mat->col > 0;
-
-        if (chk_1 && chk_2 && chk_3) {
-            rvalue = mat->ptr + (row * mat->col);
-        }
-    }
-
-    return rvalue;
-}
-
-float *f_matrix_at(f_matrix_t *mat, int row, int col) {
-    float *rvalue = NULL;
-
-    if ((mat != NULL) && (mat->ptr != NULL)) {
-        const bool chk_1 = row >= 0 && col >= 0;
-        const bool chk_2 = mat->row > row;
-        const bool chk_3 = mat->col > col;
-
-        if (chk_1 && chk_2 && chk_3) {
-            rvalue = mat->ptr + (row * mat->col + col);
-        }
-    }
-
-    return rvalue;
-}
-
-// -----------------------------------------------------------------------------
-
 static void __af_linear(g_page_t *page, int n_id) {
     float *Z = &page->z.ptr[n_id];
     float *Y = &page->y.ptr[n_id];
@@ -194,15 +160,15 @@ static bool Create(struct g_neuron_t *self, g_page_t *page, int n_id) {
                 case LEAKY_RELU: {
                     page->af_call = __af_leaky_relu;
 
-                    rvalue = rvalue && page->af_args.ptr != NULL;
-                    rvalue = rvalue && page->af_args.len > 0;
+                    rvalue = rvalue && (page->af_args.ptr != NULL);
+                    rvalue = rvalue && (page->af_args.len > 0);
                 } break;
 
                 case PRELU: {
                     page->af_call = __af_prelu;
 
-                    rvalue = rvalue && page->af_args.ptr != NULL;
-                    rvalue = rvalue && page->af_args.len == page->y.len;
+                    rvalue = rvalue && (page->af_args.ptr != NULL);
+                    rvalue = rvalue && (page->af_args.len == page->y.len);
                 } break;
 
                 case SWISH: {
@@ -212,8 +178,8 @@ static bool Create(struct g_neuron_t *self, g_page_t *page, int n_id) {
                 case ELU: {
                     page->af_call = __af_elu;
 
-                    rvalue = rvalue && page->af_args.ptr != NULL;
-                    rvalue = rvalue && page->af_args.len > 0;
+                    rvalue = rvalue && (page->af_args.ptr != NULL);
+                    rvalue = rvalue && (page->af_args.len > 0);
                 } break;
 
                 case SIGMOID: {
@@ -223,8 +189,8 @@ static bool Create(struct g_neuron_t *self, g_page_t *page, int n_id) {
                 case SOFTMAX: {
                     page->af_call = __af_softmax;
 
-                    rvalue = rvalue && page->af_args.ptr != NULL;
-                    rvalue = rvalue && page->af_args.len > 0;
+                    rvalue = rvalue && (page->af_args.ptr != NULL);
+                    rvalue = rvalue && (page->af_args.len > 0);
                 } break;
 
                 default: { // fallback
@@ -272,10 +238,10 @@ static void Step_Forward_Z(struct g_neuron_t *self) {
 
 static void Step_Forward_Y(struct g_neuron_t *self) {
     if ((self != NULL) && self->_is_safe) {
-        g_page_t *data = self->page;
+        g_page_t *page = self->page;
         const int j    = self->n_id; // j-th neuron
 
-        data->af_call(data, j);
+        page->af_call(page, j);
     }
 }
 

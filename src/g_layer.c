@@ -12,7 +12,7 @@
 #include <math.h>   // expf, sqrtf
 #include <stdlib.h> // NULL, RAND_MAX, calloc, free, random
 
-#include "g_neuron.h"
+// -----------------------------------------------------------------------------
 
 static void __unsafe_reset(g_layer_t *self) {
     assert(self != NULL);

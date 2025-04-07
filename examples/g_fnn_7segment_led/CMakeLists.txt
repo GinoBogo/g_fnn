@@ -25,6 +25,7 @@ add_executable(
     "g_fnn_7segment_led"
     "../data_reader.c"
     "../data_writer.c"
+    "../../src/g_page.c"
     "../../src/g_neuron.c"
     "../../src/g_layer.c"
     "../../src/g_network.c"

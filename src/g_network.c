@@ -12,6 +12,8 @@
 #include <stdlib.h> // NULL, calloc, free, srand
 #include <time.h>   // time
 
+// -----------------------------------------------------------------------------
+
 static void __unsafe_reset(g_network_t *self) {
     assert(self != NULL);
     // variables

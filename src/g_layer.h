@@ -9,14 +9,14 @@
 #ifndef G_LAYER_H
 #define G_LAYER_H
 
-#include "g_neuron.h"
+#include "g_neuron.h" // g_neuron_t
 
 // -----------------------------------------------------------------------------
 
 typedef struct g_layer_t {
     // variables
-    g_page_t   *page;
     int         l_id; // layer index
+    g_page_t   *page;
     g_neurons_t neurons;
 
     // functions
