@@ -58,7 +58,7 @@ if args.error_max < 0.0:
     sys.exit(1)
 
 # Open the output files
-with open("network_inputs.txt", "w") as inputs_file, open(
+with open("network_dataset.txt", "w") as inputs_file, open(
     "actual_outputs.txt", "w"
 ) as outputs_file:
     for _ in range(args.dataset_size):
