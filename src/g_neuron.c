@@ -48,111 +48,111 @@ float *f_matrix_at(f_matrix_t *mat, int row, int col) {
 
 // -----------------------------------------------------------------------------
 
-static void __af_linear(g_layer_data_t *data, int n_id) {
-    float *Z = &data->z.ptr[n_id];
-    float *Y = &data->y.ptr[n_id];
+static void __af_linear(g_page_t *page, int n_id) {
+    float *Z = &page->z.ptr[n_id];
+    float *Y = &page->y.ptr[n_id];
 
     *Y = *Z;
 
-    float *dY_dZ = &data->dy_dz.ptr[n_id];
+    float *dY_dZ = &page->dy_dz.ptr[n_id];
 
     *dY_dZ = 1.0f;
 }
 
-static void __af_tanh(g_layer_data_t *data, int n_id) {
-    float *Z = &data->z.ptr[n_id];
-    float *Y = &data->y.ptr[n_id];
+static void __af_tanh(g_page_t *page, int n_id) {
+    float *Z = &page->z.ptr[n_id];
+    float *Y = &page->y.ptr[n_id];
 
     *Y = tanhf(*Z);
 
-    float *dY_dZ = &data->dy_dz.ptr[n_id];
+    float *dY_dZ = &page->dy_dz.ptr[n_id];
 
     *dY_dZ = 1.0f - ((*Y) * (*Y));
 }
 
-static void __af_relu(g_layer_data_t *data, int n_id) {
-    float *Z = &data->z.ptr[n_id];
-    float *Y = &data->y.ptr[n_id];
+static void __af_relu(g_page_t *page, int n_id) {
+    float *Z = &page->z.ptr[n_id];
+    float *Y = &page->y.ptr[n_id];
 
     *Y = *Z > 0.0f ? *Z : 0.0f;
 
-    float *dY_dZ = &data->dy_dz.ptr[n_id];
+    float *dY_dZ = &page->dy_dz.ptr[n_id];
 
     *dY_dZ = *Z > 0.0f ? 1.0f : 0.0f;
 }
 
-static void __af_leaky_relu(g_layer_data_t *data, int n_id) {
-    float *Z = &data->z.ptr[n_id];
-    float *Y = &data->y.ptr[n_id];
+static void __af_leaky_relu(g_page_t *page, int n_id) {
+    float *Z = &page->z.ptr[n_id];
+    float *Y = &page->y.ptr[n_id];
 
-    const float alpha = data->af_args.ptr[0];
+    const float alpha = page->af_args.ptr[0];
 
     *Y = *Z > 0.0f ? *Z : alpha * (*Z);
 
-    float *dY_dZ = &data->dy_dz.ptr[n_id];
+    float *dY_dZ = &page->dy_dz.ptr[n_id];
 
     *dY_dZ = *Z > 0.0f ? 1.0f : alpha;
 }
 
-static void __af_prelu(g_layer_data_t *data, int n_id) {
-    float *Z = &data->z.ptr[n_id];
-    float *Y = &data->y.ptr[n_id];
+static void __af_prelu(g_page_t *page, int n_id) {
+    float *Z = &page->z.ptr[n_id];
+    float *Y = &page->y.ptr[n_id];
 
-    const float beta = data->af_args.ptr[n_id];
+    const float beta = page->af_args.ptr[n_id];
 
     *Y = *Z > 0.0f ? *Z : beta * (*Z);
 
-    float *dY_dZ = &data->dy_dz.ptr[n_id];
+    float *dY_dZ = &page->dy_dz.ptr[n_id];
 
     *dY_dZ = *Z > 0.0f ? 1.0f : beta;
 }
 
-static void __af_swish(g_layer_data_t *data, int n_id) {
-    float *Z = &data->z.ptr[n_id];
-    float *Y = &data->y.ptr[n_id];
+static void __af_swish(g_page_t *page, int n_id) {
+    float *Z = &page->z.ptr[n_id];
+    float *Y = &page->y.ptr[n_id];
 
     const float sigma = 1.0f / (1.0f + expf(-(*Z)));
 
     *Y = (*Z) * sigma;
 
-    float *dY_dZ = &data->dy_dz.ptr[n_id];
+    float *dY_dZ = &page->dy_dz.ptr[n_id];
 
     *dY_dZ = (*Y) + sigma * (1.0f - (*Y));
 }
 
-static void __af_elu(g_layer_data_t *data, int n_id) {
-    float *Z = &data->z.ptr[n_id];
-    float *Y = &data->y.ptr[n_id];
+static void __af_elu(g_page_t *page, int n_id) {
+    float *Z = &page->z.ptr[n_id];
+    float *Y = &page->y.ptr[n_id];
 
-    const float alpha = data->af_args.ptr[0];
+    const float alpha = page->af_args.ptr[0];
 
     *Y = *Z > 0.0f ? *Z : alpha * (expf(*Z) - 1.0f);
 
-    float *dY_dZ = &data->dy_dz.ptr[n_id];
+    float *dY_dZ = &page->dy_dz.ptr[n_id];
 
     *dY_dZ = *Z > 0.0f ? 1.0f : (*Y) + alpha;
 }
 
-static void __af_sigmoid(g_layer_data_t *data, int n_id) {
-    float *Z = &data->z.ptr[n_id];
-    float *Y = &data->y.ptr[n_id];
+static void __af_sigmoid(g_page_t *page, int n_id) {
+    float *Z = &page->z.ptr[n_id];
+    float *Y = &page->y.ptr[n_id];
 
     *Y = 1.0f / (1.0f + expf(-(*Z)));
 
-    float *dY_dZ = &data->dy_dz.ptr[n_id];
+    float *dY_dZ = &page->dy_dz.ptr[n_id];
 
     *dY_dZ = (*Y) * (1.0f - (*Y));
 }
 
-static void __af_softmax(g_layer_data_t *data, int n_id) {
-    float *Z = &data->z.ptr[n_id];
-    float *Y = &data->y.ptr[n_id];
+static void __af_softmax(g_page_t *page, int n_id) {
+    float *Z = &page->z.ptr[n_id];
+    float *Y = &page->y.ptr[n_id];
 
-    const float sum_exp = data->af_args.ptr[0];
+    const float sum_exp = page->af_args.ptr[0];
 
     *Y = expf(*Z) / sum_exp;
 
-    float *dY_dZ = &data->dy_dz.ptr[n_id];
+    float *dY_dZ = &page->dy_dz.ptr[n_id];
 
     const float sigma = 1.0f / (1.0f + expf(-(*Z)));
 
@@ -162,73 +162,73 @@ static void __af_softmax(g_layer_data_t *data, int n_id) {
 static void __unsafe_reset(g_neuron_t *self) {
     assert(self != NULL);
     // variables
-    self->data = NULL;
+    self->page = NULL;
     self->n_id = -1;
 
     // intrinsic
     self->_is_safe = false;
 }
 
-static bool Create(struct g_neuron_t *self, g_layer_data_t *data, int n_id) {
+static bool Create(struct g_neuron_t *self, g_page_t *page, int n_id) {
     bool rvalue = false;
 
     if (self != NULL) {
-        rvalue = g_neuron_data_check(data, n_id);
+        rvalue = g_neuron_page_check(page, n_id);
 
-        const bool first_time = rvalue && (data->af_call == NULL);
+        const bool first_time = rvalue && (page->af_call == NULL);
 
         if (first_time) {
-            switch (data->af_type) {
+            switch (page->af_type) {
                 case LINEAR: {
-                    data->af_call = __af_linear;
+                    page->af_call = __af_linear;
                 } break;
 
                 case TANH: {
-                    data->af_call = __af_tanh;
+                    page->af_call = __af_tanh;
                 } break;
 
                 case RELU: {
-                    data->af_call = __af_relu;
+                    page->af_call = __af_relu;
                 } break;
 
                 case LEAKY_RELU: {
-                    data->af_call = __af_leaky_relu;
+                    page->af_call = __af_leaky_relu;
 
-                    rvalue &= data->af_args.ptr != NULL;
-                    rvalue &= data->af_args.len > 0;
+                    rvalue = rvalue && page->af_args.ptr != NULL;
+                    rvalue = rvalue && page->af_args.len > 0;
                 } break;
 
                 case PRELU: {
-                    data->af_call = __af_prelu;
+                    page->af_call = __af_prelu;
 
-                    rvalue &= data->af_args.ptr != NULL;
-                    rvalue &= data->af_args.len == data->y.len;
+                    rvalue = rvalue && page->af_args.ptr != NULL;
+                    rvalue = rvalue && page->af_args.len == page->y.len;
                 } break;
 
                 case SWISH: {
-                    data->af_call = __af_swish;
+                    page->af_call = __af_swish;
                 } break;
 
                 case ELU: {
-                    data->af_call = __af_elu;
+                    page->af_call = __af_elu;
 
-                    rvalue &= data->af_args.ptr != NULL;
-                    rvalue &= data->af_args.len > 0;
+                    rvalue = rvalue && page->af_args.ptr != NULL;
+                    rvalue = rvalue && page->af_args.len > 0;
                 } break;
 
                 case SIGMOID: {
-                    data->af_call = __af_sigmoid;
+                    page->af_call = __af_sigmoid;
                 } break;
 
                 case SOFTMAX: {
-                    data->af_call = __af_softmax;
+                    page->af_call = __af_softmax;
 
-                    rvalue &= data->af_args.ptr != NULL;
-                    rvalue &= data->af_args.len > 0;
+                    rvalue = rvalue && page->af_args.ptr != NULL;
+                    rvalue = rvalue && page->af_args.len > 0;
                 } break;
 
                 default: { // fallback
-                    data->af_call = __af_linear;
+                    page->af_call = __af_linear;
                 } break;
             }
         }
@@ -236,7 +236,7 @@ static bool Create(struct g_neuron_t *self, g_layer_data_t *data, int n_id) {
         self->_is_safe = rvalue;
 
         if (rvalue) {
-            self->data = data; // "shallow copy"
+            self->page = page; // "shallow copy"
             self->n_id = n_id;
         } else {
             self->Destroy(self);
@@ -254,13 +254,13 @@ static void Destroy(struct g_neuron_t *self) {
 
 static void Step_Forward_Z(struct g_neuron_t *self) {
     if ((self != NULL) && self->_is_safe) {
-        g_layer_data_t *data = self->data;
-        const int       j    = self->n_id;  // j-th neuron
-        const int       N    = data->x.len; // number of inputs
+        g_page_t *page = self->page;
+        const int j    = self->n_id;  // j-th neuron
+        const int N    = page->x.len; // number of inputs
 
-        float *Xj = data->x.ptr;
-        float *Wj = f_matrix_row(&data->w, j);
-        float *Z  = data->z.ptr;
+        float *Xj = page->x.ptr;
+        float *Wj = f_matrix_row(&page->w, j);
+        float *Z  = page->z.ptr;
 
         Z[j] = Wj[N]; // bias of j-th neuron
 
@@ -272,8 +272,8 @@ static void Step_Forward_Z(struct g_neuron_t *self) {
 
 static void Step_Forward_Y(struct g_neuron_t *self) {
     if ((self != NULL) && self->_is_safe) {
-        g_layer_data_t *data = self->data;
-        const int       j    = self->n_id; // j-th neuron
+        g_page_t *data = self->page;
+        const int j    = self->n_id; // j-th neuron
 
         data->af_call(data, j);
     }
@@ -292,12 +292,13 @@ void g_neuron_link(g_neuron_t *self) {
     }
 }
 
-bool g_neuron_data_check(g_layer_data_t *data, int n_id) {
-    bool rvalue = data != NULL;
+bool g_neuron_page_check(g_page_t *page, int n_id) {
+    bool rvalue = page != NULL;
 
     if (rvalue) {
+        // prevent out-of-bounds access to Z (and then W and Y)
         rvalue = rvalue && (n_id >= 0);
-        rvalue = rvalue && (data->z.len > n_id); // prevent out-of-bounds access to Z (and then W and Y)
+        rvalue = rvalue && (page->z.len > n_id);
     }
 
     return rvalue;

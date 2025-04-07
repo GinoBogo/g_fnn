@@ -15,7 +15,7 @@
 static void __unsafe_reset(g_network_t *self) {
     assert(self != NULL);
     // variables
-    self->data       = NULL;
+    self->pages      = NULL;
     self->layers.ptr = NULL;
     self->layers.len = 0;
 
@@ -23,13 +23,13 @@ static void __unsafe_reset(g_network_t *self) {
     self->_is_safe = false;
 }
 
-static bool Create(struct g_network_t *self, g_layers_data_t *data) {
+static bool Create(struct g_network_t *self, g_pages_t *pages) {
     bool rvalue = self != NULL;
 
     if (rvalue) {
-        rvalue = g_network_data_check(data);
+        rvalue = g_network_pages_check(pages);
 
-        const int L = rvalue ? data->len : 0;
+        const int L = rvalue ? pages->len : 0;
 
         if (rvalue) {
             self->layers.ptr = calloc(L, sizeof(g_layer_t));
@@ -40,12 +40,12 @@ static bool Create(struct g_network_t *self, g_layers_data_t *data) {
 
         if (rvalue) {
             for (int k = 0; k < L; ++k) {
-                g_layer_t      *layer      = &self->layers.ptr[k];
-                g_layer_data_t *layer_data = &data->ptr[k];
+                g_layer_t *layer = &self->layers.ptr[k];
+                g_page_t  *page  = &pages->ptr[k];
 
                 g_layer_link(layer);
 
-                rvalue = layer->Create(layer, layer_data, k);
+                rvalue = layer->Create(layer, page, k);
 
                 if (!rvalue) {
                     break; // exit loop if layer creation fails
@@ -55,18 +55,18 @@ static bool Create(struct g_network_t *self, g_layers_data_t *data) {
 
         if (rvalue) {
             for (int i = 0, j = 1; j < L; ++i, ++j) {
-                f_vector_t *Yi = &data->ptr[i].y;
-                f_vector_t *Xj = &data->ptr[j].x;
+                f_vector_t *Yi = &pages->ptr[i].y;
+                f_vector_t *Xj = &pages->ptr[j].x;
 
-                rvalue &= Yi->ptr == Xj->ptr;
-                rvalue &= Yi->len == Xj->len;
+                rvalue = rvalue && (Yi->ptr == Xj->ptr);
+                rvalue = rvalue && (Yi->len == Xj->len);
             }
         }
 
         self->_is_safe = rvalue;
 
         if (rvalue) {
-            self->data = data; // "shallow copy"
+            self->pages = pages;
         } else {
             self->Destroy(self);
         }
@@ -128,11 +128,11 @@ static void Step_Errors(struct g_network_t *self, f_vector_t *actual_outputs) {
 
             g_layer_t *layer_L = &self->layers.ptr[L - 1];
 
-            const int P = layer_L->data->y.len;
+            const int P = layer_L->page->y.len;
 
             if (P == actual_outputs->len) {
-                float *Y_L     = layer_L->data->y.ptr;
-                float *dE_dy_L = layer_L->data->de_dy.ptr;
+                float *Y_L     = layer_L->page->y.ptr;
+                float *dE_dy_L = layer_L->page->de_dy.ptr;
 
                 for (int j = 0; j < P; ++j) {
                     dE_dy_L[j] = Y_L[j] - actual_outputs->ptr[j];
@@ -161,7 +161,7 @@ static void Step_Backward(struct g_network_t *self) {
     }
 }
 
-bool g_network_data_check(g_layers_data_t *data) {
+bool g_network_pages_check(g_pages_t *data) {
     bool rvalue = data != NULL;
 
     if (rvalue) {

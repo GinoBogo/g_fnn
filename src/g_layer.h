@@ -15,12 +15,12 @@
 
 typedef struct g_layer_t {
     // variables
-    g_layer_data_t *data;
-    int             l_id; // layer index
-    g_neurons_t     neurons;
+    g_page_t   *page;
+    int         l_id; // layer index
+    g_neurons_t neurons;
 
     // functions
-    bool (*Create)(struct g_layer_t *self, g_layer_data_t *data, int l_id);
+    bool (*Create)(struct g_layer_t *self, g_page_t *page, int l_id);
     void (*Destroy)(struct g_layer_t *self);
     void (*Init_Weights)(struct g_layer_t *self);
     void (*Step_Forward)(struct g_layer_t *self);
@@ -40,9 +40,9 @@ typedef struct g_layers_t {
 
 extern void g_layer_link(g_layer_t *self);
 
-extern void g_layer_data_reset(g_layer_data_t *data);
+extern void g_layer_page_reset(g_page_t *page);
 
-extern bool g_layer_data_check(g_layer_data_t *data, int l_id);
+extern bool g_layer_page_check(g_page_t *page, int l_id);
 
 #endif // G_LAYER_H
 

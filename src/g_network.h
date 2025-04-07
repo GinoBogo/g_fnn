@@ -15,11 +15,11 @@
 
 typedef struct g_network_t {
     // variables
-    g_layers_data_t *data;
-    g_layers_t       layers;
+    g_pages_t *pages;
+    g_layers_t layers;
 
     // functions
-    bool (*Create)(struct g_network_t *self, g_layers_data_t *data);
+    bool (*Create)(struct g_network_t *self, g_pages_t *pages);
     void (*Destroy)(struct g_network_t *self);
     void (*Init_Weights)(struct g_network_t *self);
     void (*Step_Forward)(struct g_network_t *self);
@@ -39,7 +39,7 @@ typedef struct g_networks_t {
 
 extern void g_network_link(g_network_t *self);
 
-extern bool g_network_data_check(g_layers_data_t *data);
+extern bool g_network_pages_check(g_pages_t *pages);
 
 #endif // G_NETWORK_H
 

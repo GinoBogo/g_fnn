@@ -17,7 +17,7 @@
 static void __unsafe_reset(g_layer_t *self) {
     assert(self != NULL);
     // variables
-    self->data        = NULL;
+    self->page        = NULL;
     self->l_id        = -1;
     self->neurons.ptr = NULL;
     self->neurons.len = 0;
@@ -50,13 +50,13 @@ static void __xavier_uniform_init(float *weights, int fan_in, int fan_out) {
     weights[fan_in] = 0.5f; // bias term
 }
 
-static bool Create(struct g_layer_t *self, g_layer_data_t *data, int l_id) {
+static bool Create(struct g_layer_t *self, g_page_t *page, int l_id) {
     bool rvalue = self != NULL;
 
     if (rvalue) {
-        rvalue = g_layer_data_check(data, l_id);
+        rvalue = g_layer_page_check(page, l_id);
 
-        const int P = rvalue ? data->y.len : 0;
+        const int P = rvalue ? page->y.len : 0;
 
         if (rvalue) {
             self->neurons.ptr = calloc(P, sizeof(g_neuron_t));
@@ -71,7 +71,7 @@ static bool Create(struct g_layer_t *self, g_layer_data_t *data, int l_id) {
 
                 g_neuron_link(neuron);
 
-                rvalue = neuron->Create(neuron, data, j);
+                rvalue = neuron->Create(neuron, page, j);
 
                 if (!rvalue) {
                     break; // exit loop if neuron creation fails
@@ -82,7 +82,7 @@ static bool Create(struct g_layer_t *self, g_layer_data_t *data, int l_id) {
         self->_is_safe = rvalue;
 
         if (rvalue) {
-            self->data = data; // "shallow copy"
+            self->page = page; // "shallow copy"
             self->l_id = l_id;
         } else {
             self->Destroy(self);
@@ -114,13 +114,13 @@ static void Destroy(struct g_layer_t *self) {
 
 static void Init_Weights(struct g_layer_t *self) {
     if ((self != NULL) && self->_is_safe) {
-        const int fan_in  = self->data->x.len;
-        const int fan_out = self->data->y.len;
+        const int fan_in  = self->page->x.len;
+        const int fan_out = self->page->y.len;
 
-        const g_act_func_type_t af_type = self->data->af_type;
+        const g_act_func_type_t af_type = self->page->af_type;
 
         for (int j = 0; j < fan_out; ++j) {
-            float *Wj = f_matrix_row(&self->data->w, j);
+            float *Wj = f_matrix_row(&self->page->w, j);
 
             switch (af_type) {
                 case RELU:
@@ -156,17 +156,17 @@ static void Step_Forward(struct g_layer_t *self) {
             neuron[j].Step_Forward_Z(&neuron[j]);
         }
 
-        if (self->data->af_type == SOFTMAX) {
+        if (self->page->af_type == SOFTMAX) {
             float sum_exp = 0.0f;
 
-            const float *Z = self->data->z.ptr;
+            const float *Z = self->page->z.ptr;
 
             for (int j = 0; j < P; ++j) {
                 sum_exp += expf(Z[j]);
             }
 
-            self->data->af_args.ptr[0] = sum_exp;
-            self->data->af_args.len    = 1;
+            self->page->af_args.ptr[0] = sum_exp;
+            self->page->af_args.len    = 1;
         }
 
         for (int j = 0; j < P; ++j) {
@@ -178,18 +178,18 @@ static void Step_Forward(struct g_layer_t *self) {
 static void Step_Errors(struct g_layer_t *self, struct g_layer_t *next) {
     if ((self != NULL) && self->_is_safe) {
         if ((self != next) && (next != NULL) && next->_is_safe) {
-            const int P0 = self->data->de_dy.len;
-            const int P1 = next->data->de_dy.len;
+            const int P0 = self->page->de_dy.len;
+            const int P1 = next->page->de_dy.len;
 
-            float *dE_dy_k0 = self->data->de_dy.ptr;
-            float *dE_dy_k1 = next->data->de_dy.ptr;
-            float *dy_dz_k1 = next->data->dy_dz.ptr;
+            float *dE_dy_k0 = self->page->de_dy.ptr;
+            float *dE_dy_k1 = next->page->de_dy.ptr;
+            float *dy_dz_k1 = next->page->dy_dz.ptr;
 
             for (int j = 0; j < P0; ++j) {
                 dE_dy_k0[j] = 0.0f;
 
                 for (int i = 0; i < P1; ++i) {
-                    float w_k1_ji = *f_matrix_at(&next->data->w, i, j);
+                    float w_k1_ji = *f_matrix_at(&next->page->w, i, j);
 
                     dE_dy_k0[j] += dE_dy_k1[i] * dy_dz_k1[i] * w_k1_ji;
                 }
@@ -200,18 +200,18 @@ static void Step_Errors(struct g_layer_t *self, struct g_layer_t *next) {
 
 static void Step_Backward(struct g_layer_t *self) {
     if ((self != NULL) && self->_is_safe) {
-        float *dE_dy = self->data->de_dy.ptr;
-        float *dy_dz = self->data->dy_dz.ptr;
+        float *dE_dy = self->page->de_dy.ptr;
+        float *dy_dz = self->page->dy_dz.ptr;
 
-        const int   P  = self->data->y.len; // number of neurons
-        const int   N  = self->data->x.len; // number of inputs (all neurons)
-        const float lr = self->data->lr;    // learning rate
+        const int   P  = self->page->y.len; // number of neurons
+        const int   N  = self->page->x.len; // number of inputs (all neurons)
+        const float lr = self->page->lr;    // learning rate
 
         for (int j = 0; j < P; ++j) {
             const float dE_dz_j = dE_dy[j] * dy_dz[j];
 
-            float *Xj = &self->data->x.ptr[j];
-            float *Wj = f_matrix_row(&self->data->w, j);
+            float *Xj = &self->page->x.ptr[j];
+            float *Wj = f_matrix_row(&self->page->w, j);
 
             for (int i = 0; i < N; ++i) {
                 Wj[i] -= lr * dE_dz_j * Xj[i];
@@ -237,86 +237,86 @@ void g_layer_link(g_layer_t *self) {
     }
 }
 
-void g_layer_data_reset(g_layer_data_t *data) {
-    if (data != NULL) {
-        data->l_id = -1;
+void g_layer_page_reset(g_page_t *page) {
+    if (page != NULL) {
+        page->l_id = -1;
         // forward propagation
-        data->x.ptr = NULL;
-        data->x.len = 0;
-        data->w.ptr = NULL;
-        data->w.row = 0;
-        data->w.col = 0;
-        data->z.ptr = NULL;
-        data->z.len = 0;
-        data->y.ptr = NULL;
-        data->y.len = 0;
+        page->x.ptr = NULL;
+        page->x.len = 0;
+        page->w.ptr = NULL;
+        page->w.row = 0;
+        page->w.col = 0;
+        page->z.ptr = NULL;
+        page->z.len = 0;
+        page->y.ptr = NULL;
+        page->y.len = 0;
 
         // backward propagation
-        data->dy_dz.ptr = NULL;
-        data->dy_dz.len = 0;
-        data->de_dy.ptr = NULL;
-        data->de_dy.len = 0;
+        page->dy_dz.ptr = NULL;
+        page->dy_dz.len = 0;
+        page->de_dy.ptr = NULL;
+        page->de_dy.len = 0;
 
-        data->af_type     = UNKNOWN;
-        data->af_call     = NULL;
-        data->af_args.ptr = NULL;
-        data->af_args.len = 0;
+        page->af_type     = UNKNOWN;
+        page->af_call     = NULL;
+        page->af_args.ptr = NULL;
+        page->af_args.len = 0;
     }
 }
 
-bool g_layer_data_check(g_layer_data_t *data, int l_id) {
-    bool rvalue = data != NULL;
+bool g_layer_page_check(g_page_t *page, int l_id) {
+    bool rvalue = page != NULL;
 
     if (rvalue) {
-        rvalue = data->l_id == l_id;
+        rvalue = page->l_id == l_id;
         // forward propagation
-        rvalue = rvalue && (data->x.ptr != NULL);
-        rvalue = rvalue && (data->w.ptr != NULL);
-        rvalue = rvalue && (data->z.ptr != NULL);
-        rvalue = rvalue && (data->y.ptr != NULL);
+        rvalue = rvalue && (page->x.ptr != NULL);
+        rvalue = rvalue && (page->w.ptr != NULL);
+        rvalue = rvalue && (page->z.ptr != NULL);
+        rvalue = rvalue && (page->y.ptr != NULL);
 
         // backward propagation
-        rvalue = rvalue && (data->dy_dz.ptr != NULL);
-        rvalue = rvalue && (data->de_dy.ptr != NULL);
+        rvalue = rvalue && (page->dy_dz.ptr != NULL);
+        rvalue = rvalue && (page->de_dy.ptr != NULL);
 
         if (rvalue) {
             // forward propagation
-            rvalue = rvalue && (data->x.ptr != data->z.ptr);
-            rvalue = rvalue && (data->x.ptr != data->y.ptr);
-            rvalue = rvalue && (data->z.ptr != data->y.ptr);
+            rvalue = rvalue && (page->x.ptr != page->z.ptr);
+            rvalue = rvalue && (page->x.ptr != page->y.ptr);
+            rvalue = rvalue && (page->z.ptr != page->y.ptr);
 
             // backward propagation
-            rvalue = rvalue && (data->dy_dz.ptr != data->de_dy.ptr);
+            rvalue = rvalue && (page->dy_dz.ptr != page->de_dy.ptr);
 
-            rvalue = rvalue && (data->dy_dz.ptr != data->x.ptr);
-            rvalue = rvalue && (data->dy_dz.ptr != data->z.ptr);
-            rvalue = rvalue && (data->dy_dz.ptr != data->y.ptr);
+            rvalue = rvalue && (page->dy_dz.ptr != page->x.ptr);
+            rvalue = rvalue && (page->dy_dz.ptr != page->z.ptr);
+            rvalue = rvalue && (page->dy_dz.ptr != page->y.ptr);
 
-            rvalue = rvalue && (data->de_dy.ptr != data->x.ptr);
-            rvalue = rvalue && (data->de_dy.ptr != data->z.ptr);
-            rvalue = rvalue && (data->de_dy.ptr != data->y.ptr);
+            rvalue = rvalue && (page->de_dy.ptr != page->x.ptr);
+            rvalue = rvalue && (page->de_dy.ptr != page->z.ptr);
+            rvalue = rvalue && (page->de_dy.ptr != page->y.ptr);
         }
 
         if (rvalue) {
-            const int P = data->w.row;
+            const int P = page->w.row;
 
             for (int j = 0; j < P; ++j) {
-                float *data__w_ptr = f_matrix_row(&data->w, j);
+                float *page__w_ptr = f_matrix_row(&page->w, j);
 
-                rvalue = data__w_ptr != NULL;
+                rvalue = page__w_ptr != NULL;
 
                 if (!rvalue) {
                     break; // exit loop if null pointer
                 }
 
                 // forward propagation
-                rvalue = rvalue && (data__w_ptr != data->x.ptr);
-                rvalue = rvalue && (data__w_ptr != data->z.ptr);
-                rvalue = rvalue && (data__w_ptr != data->y.ptr);
+                rvalue = rvalue && (page__w_ptr != page->x.ptr);
+                rvalue = rvalue && (page__w_ptr != page->z.ptr);
+                rvalue = rvalue && (page__w_ptr != page->y.ptr);
 
                 // backward propagation
-                rvalue = rvalue && (data__w_ptr != data->dy_dz.ptr);
-                rvalue = rvalue && (data__w_ptr != data->de_dy.ptr);
+                rvalue = rvalue && (page__w_ptr != page->dy_dz.ptr);
+                rvalue = rvalue && (page__w_ptr != page->de_dy.ptr);
 
                 if (!rvalue) {
                     break; // exit loop if weights are invalid
@@ -326,14 +326,14 @@ bool g_layer_data_check(g_layer_data_t *data, int l_id) {
 
         if (rvalue) {
             // forward propagation
-            rvalue = data->x.len > 0;
-            rvalue = rvalue && (data->w.col == data->x.len + 1);
-            rvalue = rvalue && (data->w.row == data->z.len);
-            rvalue = rvalue && (data->w.row == data->y.len);
+            rvalue = page->x.len > 0;
+            rvalue = rvalue && (page->w.col == page->x.len + 1);
+            rvalue = rvalue && (page->w.row == page->z.len);
+            rvalue = rvalue && (page->w.row == page->y.len);
 
             // backward propagation
-            rvalue = rvalue && (data->dy_dz.len == data->z.len);
-            rvalue = rvalue && (data->de_dy.len == data->y.len);
+            rvalue = rvalue && (page->dy_dz.len == page->z.len);
+            rvalue = rvalue && (page->de_dy.len == page->y.len);
         }
     }
 

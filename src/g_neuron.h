@@ -50,9 +50,9 @@ typedef enum g_act_func_type_t {
     UNKNOWN = -1
 } g_act_func_type_t;
 
-struct g_layer_data_t; // forward declaration
+struct g_page_t; // forward declaration
 
-typedef void (*g_act_func_call_t)(struct g_layer_data_t *data, int n_id);
+typedef void (*g_act_func_call_t)(struct g_page_t *data, int n_id);
 
 typedef struct g_act_func_args_t {
     float *ptr;
@@ -61,7 +61,7 @@ typedef struct g_act_func_args_t {
 
 // -----------------------------------------------------------------------------
 
-typedef struct g_layer_data_t {
+typedef struct g_page_t {
     int l_id; // layer index
     // forward propagation
     f_vector_t x; // X[neuron]
@@ -78,22 +78,22 @@ typedef struct g_layer_data_t {
     g_act_func_type_t af_type;
     g_act_func_call_t af_call;
     g_act_func_args_t af_args;
-} g_layer_data_t;
+} g_page_t;
 
-typedef struct g_layers_data_t {
-    g_layer_data_t *ptr;
-    int             len;
-} g_layers_data_t;
+typedef struct g_pages_t {
+    g_page_t *ptr;
+    int       len;
+} g_pages_t;
 
 // -----------------------------------------------------------------------------
 
 typedef struct g_neuron_t {
     // variables
-    g_layer_data_t *data;
-    int             n_id; // neuron index
+    g_page_t *page;
+    int       n_id; // neuron index
 
     // functions
-    bool (*Create)(struct g_neuron_t *self, g_layer_data_t *data, int n_id);
+    bool (*Create)(struct g_neuron_t *self, g_page_t *page, int n_id);
     void (*Destroy)(struct g_neuron_t *self);
     void (*Step_Forward_Z)(struct g_neuron_t *self);
     void (*Step_Forward_Y)(struct g_neuron_t *self);
@@ -111,7 +111,7 @@ typedef struct g_neurons_t {
 
 extern void g_neuron_link(g_neuron_t *self);
 
-extern bool g_neuron_data_check(g_layer_data_t *data, int n_id);
+extern bool g_neuron_page_check(g_page_t *data, int n_id);
 
 #endif // G_NEURON_H
 
