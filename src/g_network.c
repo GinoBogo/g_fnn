@@ -163,12 +163,12 @@ static void Step_Backward(struct g_network_t *self) {
     }
 }
 
-bool g_network_pages_check(g_pages_t *data) {
-    bool rvalue = data != NULL;
+bool g_network_pages_check(g_pages_t *page) {
+    bool rvalue = page != NULL;
 
     if (rvalue) {
-        rvalue = rvalue && (data->ptr != NULL);
-        rvalue = rvalue && (data->len > 0);
+        rvalue = rvalue && (page->ptr != NULL);
+        rvalue = rvalue && (page->len > 1); // at least 2 layers
     }
 
     return rvalue;
