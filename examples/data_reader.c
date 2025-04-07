@@ -18,6 +18,15 @@
 static void __skip_invalid_chars(FILE *file) {
     int c;
     while ((c = fgetc(file)) != EOF) {
+        // Skip lines that start with '#'
+        if (c == '#') {
+            while ((c = fgetc(file)) != EOF && c != '\n') {
+                // Consume the rest of the line
+            }
+            continue; // Check the next character after the comment line
+        }
+
+        // Check for valid characters
         if (isdigit(c)     //
             || c == '.'    //
             || c == '-'    //
