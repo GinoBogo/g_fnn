@@ -22,7 +22,7 @@ typedef struct g_layer_t {
     // functions
     bool (*Create)(struct g_layer_t *self, g_page_t *page, int l_id);
     void (*Destroy)(struct g_layer_t *self);
-    void (*Init_Weights)(struct g_layer_t *self);
+    void (*Init_Weights)(struct g_layer_t *self, float bias);
     void (*Step_Forward)(struct g_layer_t *self);
     void (*Step_Errors)(struct g_layer_t *self, struct g_layer_t *next);
     void (*Step_Backward)(struct g_layer_t *self);

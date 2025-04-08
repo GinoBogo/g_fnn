@@ -15,7 +15,7 @@
 
 #define SIZEOF(x) ((int)(sizeof(x) / sizeof(x[0])))
 
-#define TRAINING_MODE 0
+#define TRAINING_MODE 1
 
 // -----------------------------------------------------------------------------
 
@@ -189,7 +189,7 @@ int main(int argc, char *argv[]) {
 
     if (network.Create(&network, &pages)) {
 #if TRAINING_MODE
-        network.Init_Weights(&network);
+        network.Init_Weights(&network, 0.5f);
 #endif
         // network dataset stream
         network_dataset_file = data_reader_open("network_dataset.txt");
@@ -201,7 +201,7 @@ int main(int argc, char *argv[]) {
         // actual outputs stream
         actual_outputs_file = data_reader_open("actual_outputs.txt");
         if (actual_outputs_file == NULL) {
-            data_reader_close(&network_inputs_file);
+            data_reader_close(&network_dataset_file);
             network.Destroy(&network);
             return 1;
         }

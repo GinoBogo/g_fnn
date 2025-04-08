@@ -97,7 +97,7 @@ static void Destroy(struct g_network_t *self) {
     }
 }
 
-static void Init_Weights(struct g_network_t *self) {
+static void Init_Weights(struct g_network_t *self, float bias) {
     if ((self != NULL) && self->_is_safe) {
         srandom(time(NULL));
 
@@ -106,7 +106,7 @@ static void Init_Weights(struct g_network_t *self) {
         for (int k = 0; k < L; ++k) {
             g_layer_t *layer = &self->layers.ptr[k];
 
-            layer->Init_Weights(layer);
+            layer->Init_Weights(layer, bias);
         }
     }
 }

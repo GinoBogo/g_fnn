@@ -26,7 +26,7 @@ static void __unsafe_reset(g_layer_t *self) {
     self->_is_safe = false;
 }
 
-static void __he_uniform_init(float *weights, int fan_in) {
+static void __he_uniform_init(float *weights, int fan_in, float bias) {
     const float std_dev = sqrtf(6.0f / fan_in);
 
     for (int i = 0; i < fan_in; ++i) {
@@ -35,10 +35,10 @@ static void __he_uniform_init(float *weights, int fan_in) {
         weights[i] = (number * (2.0f * std_dev)) - std_dev;
     }
 
-    weights[fan_in] = 0.5f; // bias term
+    weights[fan_in] = bias;
 }
 
-static void __xavier_uniform_init(float *weights, int fan_in, int fan_out) {
+static void __xavier_uniform_init(float *weights, int fan_in, int fan_out, float bias) {
     const float std_dev = sqrtf(6.0f / (fan_in + fan_out));
 
     for (int i = 0; i < fan_in; ++i) {
@@ -47,7 +47,7 @@ static void __xavier_uniform_init(float *weights, int fan_in, int fan_out) {
         weights[i] = (number * (2.0f * std_dev)) - std_dev;
     }
 
-    weights[fan_in] = 0.5f; // bias term
+    weights[fan_in] = bias;
 }
 
 static bool Create(struct g_layer_t *self, g_page_t *page, int l_id) {
@@ -112,7 +112,7 @@ static void Destroy(struct g_layer_t *self) {
     }
 }
 
-static void Init_Weights(struct g_layer_t *self) {
+static void Init_Weights(struct g_layer_t *self, float bias) {
     if ((self != NULL) && self->_is_safe) {
         const int fan_in  = self->page->x.len;
         const int fan_out = self->page->y.len;
@@ -128,13 +128,13 @@ static void Init_Weights(struct g_layer_t *self) {
                 case PRELU:
                 case SWISH:
                 case ELU:
-                    __he_uniform_init(Wj, fan_in);
+                    __he_uniform_init(Wj, fan_in, bias);
                     break;
 
                 case TANH:
                 case SIGMOID:
                 case SOFTMAX:
-                    __xavier_uniform_init(Wj, fan_in, fan_out);
+                    __xavier_uniform_init(Wj, fan_in, fan_out, bias);
                     break;
                 default:
                     for (int i = 0; i <= fan_in; ++i) {
