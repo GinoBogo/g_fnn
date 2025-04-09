@@ -36,6 +36,20 @@ void data_writer_close(FILE **file) {
     }
 }
 
+bool data_writer_next_remark(FILE *file, const char *remark) {
+    if (file == NULL) {
+        printf("[ERROR] No file open\n");
+        return false;
+    }
+
+    if (remark == NULL) {
+        printf("[ERROR] Invalid arguments for next remark\n");
+        return false;
+    }
+
+    return fprintf(file, "# %s\n", remark) > 0;
+}
+
 bool data_writer_next_values(FILE *file, float *values_ptr, const int values_len) {
     if (file == NULL) {
         printf("[ERROR] No file open\n");

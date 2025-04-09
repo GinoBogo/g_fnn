@@ -118,8 +118,11 @@ void training_mode(g_network_t *network, g_pages_t *pages) {
     }
 
     // save weights to file
+    data_writer_next_remark(file_weights_out, "Layer 1 weights");
     data_writer_next_matrix(file_weights_out, &pages->ptr[0].w);
+    data_writer_next_remark(file_weights_out, "Layer 2 weights");
     data_writer_next_matrix(file_weights_out, &pages->ptr[1].w);
+    data_writer_next_remark(file_weights_out, "Layer 3 weights");
     data_writer_next_matrix(file_weights_out, &pages->ptr[2].w);
 }
 
