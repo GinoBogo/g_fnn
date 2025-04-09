@@ -65,5 +65,39 @@ bool data_writer_next_values(FILE *file, float *values_ptr, const int values_len
     return true;
 }
 
+bool data_writer_next_vector(FILE *file, f_vector_t *vector_ptr) {
+    if (file == NULL) {
+        printf("[ERROR] No file open\n");
+        return false;
+    }
+
+    if (vector_ptr == NULL || vector_ptr->len <= 0) {
+        printf("[ERROR] Invalid arguments for next vector\n");
+        return false;
+    }
+
+    return data_writer_next_values(file, vector_ptr->ptr, vector_ptr->len);
+}
+
+bool data_writer_next_matrix(FILE *file, f_matrix_t *matrix_ptr) {
+    if (file == NULL) {
+        printf("[ERROR] No file open\n");
+        return false;
+    }
+
+    if (matrix_ptr == NULL || matrix_ptr->row <= 0 || matrix_ptr->col <= 0) {
+        printf("[ERROR] Invalid arguments for next matrix\n");
+        return false;
+    }
+
+    for (int i = 0; i < matrix_ptr->row; i++) {
+        if (!data_writer_next_values(file, f_matrix_row(matrix_ptr, i), matrix_ptr->col)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 // -----------------------------------------------------------------------------
 // End Of File
