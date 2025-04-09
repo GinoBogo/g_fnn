@@ -13,7 +13,7 @@
 
 void g_random_seed(uint32_t seed);
 
-uint32_t g_random_uint32(void);
+uint32_t g_random_next(void);
 
 float g_random_range(float min, float max);
 
