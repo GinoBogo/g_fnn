@@ -58,8 +58,8 @@ if args.error_max < 0.0:
     sys.exit(1)
 
 # Open the output files
-with open("network_dataset.txt", "w") as inputs_file, open(
-    "actual_outputs.txt", "w"
+with open("fnn_dataset.set", "w") as inputs_file, open(
+    "fnn_outputs.act", "w"
 ) as outputs_file:
     for _ in range(args.dataset_size):
         # Generate a random digit (0-9)
