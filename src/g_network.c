@@ -9,8 +9,10 @@
 #include "g_network.h"
 
 #include <assert.h> // assert
-#include <stdlib.h> // NULL, calloc, free, srand
+#include <stdlib.h> // NULL, calloc, free
 #include <time.h>   // time
+
+#include "g_random.h" // g_random_seed
 
 // -----------------------------------------------------------------------------
 
@@ -99,7 +101,7 @@ static void Destroy(struct g_network_t *self) {
 
 static void Init_Weights(struct g_network_t *self, float bias) {
     if ((self != NULL) && self->_is_safe) {
-        srandom(time(NULL));
+        g_random_seed(time(NULL));
 
         const int L = self->layers.len;
 

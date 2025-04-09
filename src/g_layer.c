@@ -10,7 +10,9 @@
 
 #include <assert.h> // assert
 #include <math.h>   // expf, sqrtf
-#include <stdlib.h> // NULL, RAND_MAX, calloc, free, random
+#include <stdlib.h> // NULL, calloc, free
+
+#include "g_random.h" // g_random_range
 
 // -----------------------------------------------------------------------------
 
@@ -30,9 +32,7 @@ static void __he_uniform_init(float *weights, int fan_in, float bias) {
     const float std_dev = sqrtf(6.0f / fan_in);
 
     for (int i = 0; i < fan_in; ++i) {
-        const float number = (float)random() / (float)RAND_MAX;
-
-        weights[i] = (number * (2.0f * std_dev)) - std_dev;
+        weights[i] = g_random_range(-std_dev, std_dev);
     }
 
     weights[fan_in] = bias;
@@ -42,9 +42,7 @@ static void __xavier_uniform_init(float *weights, int fan_in, int fan_out, float
     const float std_dev = sqrtf(6.0f / (fan_in + fan_out));
 
     for (int i = 0; i < fan_in; ++i) {
-        const float number = (float)random() / (float)RAND_MAX;
-
-        weights[i] = (number * (2.0f * std_dev)) - std_dev;
+        weights[i] = g_random_range(-std_dev, std_dev);
     }
 
     weights[fan_in] = bias;

@@ -26,6 +26,7 @@ add_executable(
     "../../src/g_neuron.c"
     "../../src/g_layer.c"
     "../../src/g_network.c"
+    "../../src/g_random.c"
     "main.c"
 )
 
