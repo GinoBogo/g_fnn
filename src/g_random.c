@@ -8,34 +8,34 @@
 
 #include "g_random.h"
 
-// Xoshiro256+ random number generator
+// Variant for 32-bit microcontrollers of the Xoshiro256+ algorithm
 //
 // Source: https://prng.di.unimi.it/
 
-static uint32_t xoshiro_state[8] = {
+static uint32_t _state[8] = {
     0xBAD5EED1, 0x062081DE, 0xEAD3D6C8, 0x7F4A7C15, 0x3D627E37, 0xA5A5A5A5, 0x12345678, 0x87654321};
 
-static inline uint32_t rotate_left(uint32_t x, int k) {
+static inline uint32_t _rotate_left(uint32_t x, int k) {
     return (x << k) | (x >> (32 - k));
 }
 
-uint32_t g_random_uint32(void) {
-    const uint32_t result = rotate_left(xoshiro_state[1] * 5, 7) * 9;
-    const uint32_t t      = xoshiro_state[1] << 9;
+uint32_t g_random_next(void) {
+    const uint32_t r = _rotate_left(_state[1] * 5, 7) * 9;
+    const uint32_t t = _state[1] << 9;
 
-    xoshiro_state[2] ^= xoshiro_state[0];
-    xoshiro_state[5] ^= xoshiro_state[1];
-    xoshiro_state[1] ^= xoshiro_state[2];
-    xoshiro_state[7] ^= xoshiro_state[3];
-    xoshiro_state[3] ^= xoshiro_state[4];
-    xoshiro_state[4] ^= xoshiro_state[5];
-    xoshiro_state[0] ^= xoshiro_state[6];
-    xoshiro_state[6] ^= xoshiro_state[7];
+    _state[2] ^= _state[0];
+    _state[5] ^= _state[1];
+    _state[1] ^= _state[2];
+    _state[7] ^= _state[3];
+    _state[3] ^= _state[4];
+    _state[4] ^= _state[5];
+    _state[0] ^= _state[6];
+    _state[6] ^= _state[7];
 
-    xoshiro_state[6] ^= t;
-    xoshiro_state[2] = rotate_left(xoshiro_state[2], 11);
+    _state[6] ^= t;
+    _state[2] = _rotate_left(_state[2], 11);
 
-    return result;
+    return r;
 }
 
 void g_random_seed(uint32_t seed) {
@@ -43,12 +43,12 @@ void g_random_seed(uint32_t seed) {
         seed ^= seed >> 12;
         seed ^= seed << 25;
         seed ^= seed >> 27;
-        xoshiro_state[i] = seed * 0x2545F491 + i;
+        _state[i] = seed * 0x2545F491 + i;
     }
 
     // Discard the first 16 values
     for (int i = 0; i < 16; i++) {
-        (void)g_random_uint32();
+        (void)g_random_next();
     }
 }
 
@@ -56,7 +56,7 @@ float g_random_range(float min, float max) {
     if (min >= max)
         return min;
 
-    float random = (float)g_random_uint32() / (float)0xFFFFFFFF;
+    float random = (float)g_random_next() / (float)0xFFFFFFFF;
     return min + (random * (max - min));
 }
 
