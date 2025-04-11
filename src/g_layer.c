@@ -155,16 +155,22 @@ static void Step_Forward(struct g_layer_t *self) {
         }
 
         if (self->page->af_type == SOFTMAX) {
-            float sum_exp = 0.0f;
-
             const float *Z = self->page->z.ptr;
 
-            for (int j = 0; j < P; ++j) {
-                sum_exp += expf(Z[j]);
+            float Z_max = Z[0];
+            for (int j = 1; j < P; ++j) {
+                if (Z[j] > Z_max)
+                    Z_max = Z[j];
+            }
+
+            float sum_exp = expf(Z[0] - Z_max);
+            for (int j = 1; j < P; ++j) {
+                sum_exp += expf(Z[j] - Z_max);
             }
 
             self->page->af_args.ptr[0] = sum_exp;
-            self->page->af_args.len    = 1;
+            self->page->af_args.ptr[1] = Z_max;
+            self->page->af_args.len    = 2;
         }
 
         for (int j = 0; j < P; ++j) {

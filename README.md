@@ -124,9 +124,9 @@ An overview of the aforementioned Activation Functions, including their definiti
 | SWISH | $g(z) = z \cdot \sigma(z)$ | $g'(z) = g(z) + \sigma(z) [1 - g(z)]$ |
 | ELU | $g(z) = \alpha (e^z - 1) \ \ \ \text{if } z \leq 0; \ \ \ g(z) = z \ \ \ \text{if } z > 0$ | $g'(z) = g(z) + \alpha \ \ \ \ \text{if } z \leq 0; \ \ \ g'(z) = 1 \ \ \ \text{if } z > 0$ |
 | SIGMOID | $g(z) = \sigma(z) = \frac{1}{1 + e^{-z}}$ | $g'(z) = \sigma(z) [1 - \sigma(z)]$ |
-| SOFTMAX | $g_i(z) = \frac{e^{z_i}}{\sum_j e^{z_j}}$ | $g'_i(z) = \sigma_i(z) [1 - \sigma_i(z)]$ |
+| SOFTMAX | $g(z_j) = \frac{e^{(z_j -z_{max})}}{\sum_i e^{(z_i -z_{max})}}$ | $g'(z_j) = g(z_j) [1 - g(z_j)]$ |
 
-Leaky ReLU and PReLU look identical at first, but Leaky ReLU uses a fixed small slope ($\alpha$, typically 0.01) for negative values, while PReLU learns the slope ($\beta$) during training, providing more flexibility.
+Leaky ReLU and PReLU look identical at first, but Leaky ReLU uses a fixed small slope ($\alpha$, typically 0.01) for negative values, while PReLU learns the slope ($\beta$) during training, providing more flexibility. Softmax should be used for the output layer in conjunction with a cross-entropy loss function.
 
 ### Error Functions
 Error Functions, also known as Loss Functions or Cost Functions, are used to measure the difference between the **predicted output** of a neural network and the **actual output**. The goal is to minimize this difference, which is typically achieved through optimization algorithms.

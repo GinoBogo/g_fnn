@@ -115,14 +115,13 @@ static void __af_softmax(g_page_t *page, int n_id) {
     float *Y = &page->y.ptr[n_id];
 
     const float sum_exp = page->af_args.ptr[0];
+    const float Z_max   = page->af_args.ptr[1];
 
-    *Y = expf(*Z) / sum_exp;
+    *Y = expf(*Z - Z_max) / sum_exp;
 
     float *dY_dZ = &page->dy_dz.ptr[n_id];
 
-    const float sigma = 1.0f / (1.0f + expf(-(*Z)));
-
-    *dY_dZ = sigma * (1.0f - sigma);
+    *dY_dZ = (*Y) * (1.0f - (*Y));
 }
 
 static void __unsafe_reset(g_neuron_t *self) {
@@ -190,7 +189,7 @@ static bool Create(struct g_neuron_t *self, g_page_t *page, int n_id) {
                     page->af_call = __af_softmax;
 
                     rvalue = rvalue && (page->af_args.ptr != NULL);
-                    rvalue = rvalue && (page->af_args.len > 0);
+                    rvalue = rvalue && (page->af_args.len > 1);
                 } break;
 
                 default: { // fallback
