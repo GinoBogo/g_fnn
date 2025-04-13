@@ -165,12 +165,22 @@ static void Step_Backward(struct g_network_t *self) {
     }
 }
 
-bool g_network_pages_check(g_pages_t *page) {
-    bool rvalue = page != NULL;
+bool g_network_pages_check(g_pages_t *pages) {
+    bool rvalue = pages != NULL;
 
     if (rvalue) {
-        rvalue = rvalue && (page->ptr != NULL);
-        rvalue = rvalue && (page->len > 1); // at least 2 layers
+        rvalue = rvalue && (pages->ptr != NULL);
+        rvalue = rvalue && (pages->len > 1); // at least 2 layers
+    }
+
+    if (rvalue) {
+        const int L = pages->len;
+
+        for (int k0 = 0; k0 < L - 1; ++k0) {
+            for (int k1 = k0 + 1; k1 < L; ++k1) {
+                rvalue = rvalue && (&pages->ptr[k0] != &pages->ptr[k1]);
+            }
+        }
     }
 
     return rvalue;
