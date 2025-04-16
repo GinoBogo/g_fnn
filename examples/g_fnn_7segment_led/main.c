@@ -6,9 +6,9 @@
 // @author Gino Francesco Bogo
 // -----------------------------------------------------------------------------
 
-#include <stdio.h>  // puts
-#include <stdlib.h> // atexit
-//
+#include <stdio.h>  // FILE, NULL, puts
+#include <stdlib.h> // atexit, exit
+
 #include "data_reader.h"
 #include "data_writer.h"
 #include "g_network.h"
@@ -18,10 +18,10 @@
 #define TRAINING_MODE 1
 
 // -------------------------------------------------------------------------
-// network topology definition
+// Network Topology
 // -------------------------------------------------------------------------
 
-// layer 0: virtual input layer (store outputs only)
+// layer 0: virtual input layer (just a vector to store layer outputs)
 float L00_Y[7] = {0.0f};
 
 // layer 1: hidden layer
@@ -63,14 +63,14 @@ float L03_YT[SIZEOF(L03_Y)] = {0.0f};
 
 FILE *file_weights_cfg = NULL;
 FILE *file_dataset_set = NULL;
-FILE *file_outputs_act = NULL;
+FILE *file_outputs_set = NULL;
 FILE *file_weights_out = NULL;
 FILE *file_outputs_out = NULL;
 
 static void cleanup_resources(void) {
     data_reader_close(&file_weights_cfg);
     data_reader_close(&file_dataset_set);
-    data_reader_close(&file_outputs_act);
+    data_reader_close(&file_outputs_set);
     data_writer_close(&file_weights_out);
     data_writer_close(&file_outputs_out);
 }
@@ -87,8 +87,8 @@ void training_mode(g_network_t *network, g_pages_t *pages) {
 
     network->Init_Weights(network, 0.5f);
 
-    file_outputs_act = data_reader_open("fnn_outputs.act");
-    if (file_outputs_act == NULL) {
+    file_outputs_set = data_reader_open("fnn_outputs.set");
+    if (file_outputs_set == NULL) {
         network->Destroy(network);
         exit(1);
     }
@@ -104,7 +104,7 @@ void training_mode(g_network_t *network, g_pages_t *pages) {
         network->Step_Forward(network);
 
         // load actual outputs from file
-        if (data_reader_next_vector(file_outputs_act, &actual_outputs)) {
+        if (data_reader_next_vector(file_outputs_set, &actual_outputs)) {
             network->Step_Errors(network, &actual_outputs);
 
             network->Step_Backward(network);

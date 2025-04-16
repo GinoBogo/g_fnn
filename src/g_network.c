@@ -57,6 +57,7 @@ static bool Create(struct g_network_t *self, g_pages_t *pages) {
             }
         }
 
+        // check if layers are connected (it requires layer->Create first)
         if (rvalue) {
             for (int i = 0, j = 1; j < L; ++i, ++j) {
                 f_vector_t *Yi = &pages->ptr[i].y;

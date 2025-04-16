@@ -59,7 +59,7 @@ if args.error_max < 0.0:
 
 # Open the output files
 with open("fnn_dataset.set", "w") as inputs_file, open(
-    "fnn_outputs.act", "w"
+    "fnn_outputs.set", "w"
 ) as outputs_file:
     for _ in range(args.dataset_size):
         # Generate a random digit (0-9)
