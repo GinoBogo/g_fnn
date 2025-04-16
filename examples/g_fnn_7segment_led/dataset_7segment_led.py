@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # @file dataset_7segment_led.py
 #
 # @date April, 2025
