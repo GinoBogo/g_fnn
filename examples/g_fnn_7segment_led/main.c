@@ -8,14 +8,13 @@
 
 #include <stdio.h>  // FILE, NULL, puts
 #include <stdlib.h> // atexit, exit
+#include <string.h> // strcmp
 
 #include "data_reader.h"
 #include "data_writer.h"
 #include "g_network.h"
 
 #define SIZEOF(x) ((int)(sizeof(x) / sizeof(x[0])))
-
-#define TRAINING_MODE 1
 
 // -------------------------------------------------------------------------
 // Network Topology
@@ -160,12 +159,52 @@ void inference_mode(g_network_t *network, g_pages_t *pages) {
 }
 
 // -----------------------------------------------------------------------------
+// Argument Processing
+// -----------------------------------------------------------------------------
+
+static void process_arguments(int argc, char *argv[], bool *is_training) {
+    if (argc > 1) {
+        const char *arg = argv[1];
+
+        if ((strcmp(arg, "--train") == 0) || (strcmp(arg, "-t") == 0)) {
+            *is_training = true;
+        }
+
+        else if ((strcmp(arg, "--help") == 0) || (strcmp(arg, "-h") == 0)) {
+            fprintf(stderr, "Usage: %s [-h | --help] [-t | --train]\n", argv[0]);
+            fprintf(stderr, "  -h, --help      Show this help message\n");
+            fprintf(stderr, "  -t, --train     Run in training mode\n");
+            fprintf(stderr, "  (default)       Run in inference mode\n");
+            exit(0);
+        }
+
+        else {
+            fprintf(stderr, "Usage: %s [-h | --help] [-t | --train]\n", argv[0]);
+            fprintf(stderr, "  -h, --help      Show this help message\n");
+            fprintf(stderr, "  -t, --train     Run in training mode\n");
+            fprintf(stderr, "  (default)       Run in inference mode\n");
+            exit(1);
+        }
+    }
+
+    if (argc > 2) {
+        fprintf(stderr, "Usage: %s [-h | --help] [-t | --train]\n", argv[0]);
+        fprintf(stderr, "  -h, --help      Show this help message\n");
+        fprintf(stderr, "  -t, --train     Run in training mode\n");
+        fprintf(stderr, "  (default)       Run in inference mode\n");
+        exit(1);
+    }
+}
+
+// -----------------------------------------------------------------------------
 // Entry Point
 // -----------------------------------------------------------------------------
 
 int main(int argc, char *argv[]) {
-    (void)argc;
-    (void)argv;
+    bool is_training = false;
+
+    // process command-line arguments
+    process_arguments(argc, argv, &is_training);
 
     // register cleanup handler
     atexit(cleanup_resources);
@@ -268,11 +307,11 @@ int main(int argc, char *argv[]) {
             return 1;
         }
 
-#if TRAINING_MODE
-        training_mode(&network, &pages);
-#else
-        inference_mode(&network, &pages);
-#endif
+        if (is_training) {
+            training_mode(&network, &pages);
+        } else {
+            inference_mode(&network, &pages);
+        }
         network.Destroy(&network);
     }
 
