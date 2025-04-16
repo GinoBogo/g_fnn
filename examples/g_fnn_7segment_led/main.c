@@ -84,7 +84,17 @@ void training_mode(g_network_t *network, g_pages_t *pages) {
     actual_outputs.ptr = &L03_YT[0];
     actual_outputs.len = SIZEOF(L03_YT);
 
-    network->Init_Weights(network, 0.5f);
+    file_weights_cfg = data_reader_open("fnn_weights.cfg");
+    if (file_weights_cfg == NULL) {
+        network->Init_Weights(network, 0.5f);
+    } else {
+        for (int k = 0; k < pages->len; ++k) {
+            if (!data_reader_next_matrix(file_weights_cfg, &pages->ptr[k].w)) {
+                network->Destroy(network);
+                exit(1);
+            }
+        }
+    }
 
     file_outputs_set = data_reader_open("fnn_outputs.set");
     if (file_outputs_set == NULL) {
