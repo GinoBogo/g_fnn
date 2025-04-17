@@ -214,7 +214,7 @@ static void Step_Backward(struct g_layer_t *self) {
         for (int j = 0; j < P; ++j) {
             const float dE_dz_j = dE_dy[j] * dy_dz[j];
 
-            float *Xj = &self->page->x.ptr[j];
+            float *Xj = &self->page->x.ptr[0];
             float *Wj = f_matrix_row(&self->page->w, j);
 
             for (int i = 0; i < N; ++i) {
