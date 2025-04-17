@@ -182,6 +182,12 @@ void inference_mode(g_network_t *network, g_pages_t *pages) {
 static void process_arguments(int argc, char *argv[], bool *is_training) {
     const char *filename = basename(argv[0]);
 
+    if (argc == 1) {
+        fprintf(stderr, "Error: No arguments provided\n");
+        fprintf(stderr, "For more information use: %s --help\n", filename);
+        exit(1);
+    }
+
     for (int i = 1; i < argc; i++) {
         const char *arg = argv[i];
 
