@@ -216,6 +216,12 @@ int main(int argc, char *argv[]) {
     // process command-line arguments
     process_arguments(argc, argv, &is_training);
 
+    if (is_training) {
+        puts("Training mode");
+    } else {
+        puts("Inference mode");
+    }
+
     // register cleanup handler
     atexit(cleanup_resources);
 
