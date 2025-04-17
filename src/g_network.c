@@ -139,8 +139,13 @@ static void Step_Errors(struct g_network_t *self, f_vector_t *actual_outputs) {
                 float *Y_L     = layer_L->page->y.ptr;
                 float *dE_dy_L = layer_L->page->de_dy.ptr;
 
+                // We treat each output of the last layer as independent from
+                // the other outputs. This simplification allows us to calculate
+                // the error for each output independently, without scaling it
+                // by the total number of outputs.
+
                 for (int j = 0; j < P; ++j) {
-                    dE_dy_L[j] = Y_L[j] - actual_outputs->ptr[j];
+                    dE_dy_L[j] = 2.0f * (Y_L[j] - actual_outputs->ptr[j]);
                 }
 
                 for (int k = L - 2; k >= 0; --k) {
