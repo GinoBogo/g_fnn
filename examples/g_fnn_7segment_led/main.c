@@ -6,7 +6,8 @@
 // @author Gino Francesco Bogo
 // -----------------------------------------------------------------------------
 
-#include <stdio.h>  // FILE, NULL, puts
+#include <libgen.h> // basename
+#include <stdio.h>  // FILE, NULL, fprintf, printf, puts
 #include <stdlib.h> // atexit, exit
 #include <string.h> // strcmp
 
@@ -60,6 +61,12 @@ float L03_YT[SIZEOF(L03_Y)] = {0.0f};
 // File Handles
 // -----------------------------------------------------------------------------
 
+char *fnn_weights_cfg = "fnn_weights.cfg";
+char *fnn_dataset_set = "fnn_dataset.set";
+char *fnn_outputs_set = "fnn_outputs.set";
+char *fnn_weights_out = "fnn_weights.out";
+char *fnn_outputs_out = "fnn_outputs.out";
+
 FILE *file_weights_cfg = NULL;
 FILE *file_dataset_set = NULL;
 FILE *file_outputs_set = NULL;
@@ -84,7 +91,7 @@ void training_mode(g_network_t *network, g_pages_t *pages) {
     actual_outputs.ptr = &L03_YT[0];
     actual_outputs.len = SIZEOF(L03_YT);
 
-    file_weights_cfg = data_reader_open("fnn_weights.cfg");
+    file_weights_cfg = data_reader_open(fnn_weights_cfg);
     if (file_weights_cfg == NULL) {
         network->Init_Weights(network, 0.5f);
     } else {
@@ -96,13 +103,13 @@ void training_mode(g_network_t *network, g_pages_t *pages) {
         }
     }
 
-    file_outputs_set = data_reader_open("fnn_outputs.set");
+    file_outputs_set = data_reader_open(fnn_outputs_set);
     if (file_outputs_set == NULL) {
         network->Destroy(network);
         exit(1);
     }
 
-    file_weights_out = data_writer_open("fnn_weights.out");
+    file_weights_out = data_writer_open(fnn_weights_out);
     if (file_weights_out == NULL) {
         network->Destroy(network);
         exit(1);
@@ -141,7 +148,7 @@ void training_mode(g_network_t *network, g_pages_t *pages) {
 
 void inference_mode(g_network_t *network, g_pages_t *pages) {
     // load weights from file
-    file_weights_cfg = data_reader_open("fnn_weights.cfg");
+    file_weights_cfg = data_reader_open(fnn_weights_cfg);
     if (file_weights_cfg == NULL) {
         network->Destroy(network);
         exit(1);
@@ -173,37 +180,94 @@ void inference_mode(g_network_t *network, g_pages_t *pages) {
 // -----------------------------------------------------------------------------
 
 static void process_arguments(int argc, char *argv[], bool *is_training) {
-    if (argc > 1) {
-        const char *arg = argv[1];
+    const char *filename = basename(argv[0]);
 
-        if ((strcmp(arg, "--train") == 0) || (strcmp(arg, "-t") == 0)) {
+    for (int i = 1; i < argc; i++) {
+        const char *arg = argv[i];
+
+        if ((strcmp(arg, "--infer") == 0) || (strcmp(arg, "-i") == 0)) {
+            *is_training = false;
+        }
+
+        else if ((strcmp(arg, "--train") == 0) || (strcmp(arg, "-t") == 0)) {
             *is_training = true;
         }
 
         else if ((strcmp(arg, "--help") == 0) || (strcmp(arg, "-h") == 0)) {
-            fprintf(stderr, "Usage: %s [-h | --help] [-t | --train]\n", argv[0]);
-            fprintf(stderr, "  -h, --help      Show this help message\n");
-            fprintf(stderr, "  -t, --train     Run in training mode\n");
-            fprintf(stderr, "  (default)       Run in inference mode\n");
+            fprintf(stderr, "Usage:\n");
+            fprintf(stderr, "  %s -i [options]\n", filename);
+            fprintf(stderr, "  %s -t [options]\n", filename);
+            fprintf(stderr, "  %s -h\n", filename);
+            fprintf(stderr, "Arguments:\n");
+            fprintf(stderr, "  -i, --infer               Run in inference mode\n");
+            fprintf(stderr, "  -t, --train               Run in training mode\n");
+            fprintf(stderr, "  -h, --help                Show this help message\n");
+            fprintf(stderr, "Options:\n");
+            fprintf(stderr, "  -w, --weights-cfg <file>  The weights cfg file (default: %s)\n", fnn_weights_cfg);
+            fprintf(stderr, "  -d, --dataset-set <file>  The dataset set file (default: %s)\n", fnn_dataset_set);
+            fprintf(stderr, "  -s, --outputs-set <file>  The outputs set file (default: %s)\n", fnn_outputs_set);
+            fprintf(stderr, "  -x, --weights-out <file>  The weights out file (default: %s)\n", fnn_weights_out);
+            fprintf(stderr, "  -o, --outputs-out <file>  The outputs out file (default: %s)\n", fnn_outputs_out);
             exit(0);
         }
 
+        else if ((strcmp(arg, "--weights-cfg") == 0) || (strcmp(arg, "-w") == 0)) {
+            if (i + 1 < argc) {
+                fnn_weights_cfg = argv[++i];
+            } else {
+                fprintf(stderr, "Error: Missing argument for --weights-cfg\n");
+                exit(1);
+            }
+        }
+
+        else if ((strcmp(arg, "--dataset-set") == 0) || (strcmp(arg, "-d") == 0)) {
+            if (i + 1 < argc) {
+                fnn_dataset_set = argv[++i];
+            } else {
+                fprintf(stderr, "Error: Missing argument for --dataset-set\n");
+                exit(1);
+            }
+        }
+
+        else if ((strcmp(arg, "--outputs-set") == 0) || (strcmp(arg, "-s") == 0)) {
+            if (i + 1 < argc) {
+                fnn_outputs_set = argv[++i];
+            } else {
+                fprintf(stderr, "Error: Missing argument for --outputs-set\n");
+                exit(1);
+            }
+        }
+
+        else if ((strcmp(arg, "--weights-out") == 0) || (strcmp(arg, "-x") == 0)) {
+            if (i + 1 < argc) {
+                fnn_weights_out = argv[++i];
+            } else {
+                fprintf(stderr, "Error: Missing argument for --weights-out\n");
+                exit(1);
+            }
+        }
+
+        else if ((strcmp(arg, "--outputs-out") == 0) || (strcmp(arg, "-o") == 0)) {
+            if (i + 1 < argc) {
+                fnn_outputs_out = argv[++i];
+            } else {
+                fprintf(stderr, "Error: Missing argument for --outputs-out\n");
+                exit(1);
+            }
+        }
+
         else {
-            fprintf(stderr, "Usage: %s [-h | --help] [-t | --train]\n", argv[0]);
-            fprintf(stderr, "  -h, --help      Show this help message\n");
-            fprintf(stderr, "  -t, --train     Run in training mode\n");
-            fprintf(stderr, "  (default)       Run in inference mode\n");
+            fprintf(stderr, "Error: Unknown argument '%s'\n", arg);
+            fprintf(stderr, "For more information use: %s --help\n", filename);
             exit(1);
         }
+
+        return;
     }
 
-    if (argc > 2) {
-        fprintf(stderr, "Usage: %s [-h | --help] [-t | --train]\n", argv[0]);
-        fprintf(stderr, "  -h, --help      Show this help message\n");
-        fprintf(stderr, "  -t, --train     Run in training mode\n");
-        fprintf(stderr, "  (default)       Run in inference mode\n");
-        exit(1);
-    }
+    fprintf(stderr, "Error: Missing arguments\n");
+    fprintf(stderr, "For more information use: %s --help\n", filename);
+    exit(1);
 }
 
 // -----------------------------------------------------------------------------
@@ -217,9 +281,17 @@ int main(int argc, char *argv[]) {
     process_arguments(argc, argv, &is_training);
 
     if (is_training) {
-        puts("Training mode");
+        puts("Network mode: training");
+        printf("  [IN ] Weights file: %s\n", fnn_weights_cfg);
+        printf("  [IN ] Dataset file: %s\n", fnn_dataset_set);
+        printf("  [IN ] Outputs file: %s\n", fnn_outputs_set);
+        printf("  [OUT] Weights file: %s\n", fnn_weights_out);
+        printf("  [OUT] Outputs file: %s\n", fnn_outputs_out);
     } else {
-        puts("Inference mode");
+        printf("Network mode: inference");
+        printf("  [IN ] Weights file: %s\n", fnn_weights_cfg);
+        printf("  [IN ] Dataset file: %s\n", fnn_dataset_set);
+        printf("  [OUT] Outputs file: %s\n", fnn_outputs_out);
     }
 
     // register cleanup handler
@@ -310,14 +382,14 @@ int main(int argc, char *argv[]) {
 
     if (network.Create(&network, &pages)) {
         // load dataset from file
-        file_dataset_set = data_reader_open("fnn_dataset.set");
+        file_dataset_set = data_reader_open(fnn_dataset_set);
         if (file_dataset_set == NULL) {
             network.Destroy(&network);
             return 1;
         }
 
         // save outputs to file
-        file_outputs_out = data_writer_open("fnn_outputs.out");
+        file_outputs_out = data_writer_open(fnn_outputs_out);
         if (file_outputs_out == NULL) {
             network.Destroy(&network);
             return 1;
