@@ -281,14 +281,14 @@ int main(int argc, char *argv[]) {
     process_arguments(argc, argv, &is_training);
 
     if (is_training) {
-        puts("Network mode: training");
+        printf("Network mode: training\n");
         printf("  [IN ] Weights file: %s\n", fnn_weights_cfg);
         printf("  [IN ] Dataset file: %s\n", fnn_dataset_set);
         printf("  [IN ] Outputs file: %s\n", fnn_outputs_set);
         printf("  [OUT] Weights file: %s\n", fnn_weights_out);
         printf("  [OUT] Outputs file: %s\n", fnn_outputs_out);
     } else {
-        printf("Network mode: inference");
+        printf("Network mode: inference\n");
         printf("  [IN ] Weights file: %s\n", fnn_weights_cfg);
         printf("  [IN ] Dataset file: %s\n", fnn_dataset_set);
         printf("  [OUT] Outputs file: %s\n", fnn_outputs_out);
