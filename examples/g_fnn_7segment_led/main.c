@@ -198,7 +198,7 @@ static void process_arguments(int argc, char *argv[], bool *is_training) {
             fprintf(stderr, "  %s -i [options]\n", filename);
             fprintf(stderr, "  %s -t [options]\n", filename);
             fprintf(stderr, "  %s -h\n", filename);
-            fprintf(stderr, "Arguments:\n");
+            fprintf(stderr, "Commands:\n");
             fprintf(stderr, "  -i, --infer               Run in inference mode\n");
             fprintf(stderr, "  -t, --train               Run in training mode\n");
             fprintf(stderr, "  -h, --help                Show this help message\n");
@@ -261,13 +261,7 @@ static void process_arguments(int argc, char *argv[], bool *is_training) {
             fprintf(stderr, "For more information use: %s --help\n", filename);
             exit(1);
         }
-
-        return;
     }
-
-    fprintf(stderr, "Error: Missing arguments\n");
-    fprintf(stderr, "For more information use: %s --help\n", filename);
-    exit(1);
 }
 
 // -----------------------------------------------------------------------------
