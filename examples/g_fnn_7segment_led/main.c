@@ -17,45 +17,53 @@
 
 #define SIZEOF(x) ((int)(sizeof(x) / sizeof(x[0])))
 
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Network Topology
-// -------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+
+enum fnn {
+    l00 = 7,  // input layer
+    l01 = 20, // hidden layer
+    l02 = 20, // hidden layer
+    l03 = 10, // output layer
+    lho = 3   // number of hidden/output layers
+};
 
 // layer 0: virtual input layer (just a vector to store layer outputs)
-float L00_Y[7] = {0.0f};
+float L00_Y[l00] = {0.0f};
 
 // layer 1: hidden layer
-float             L01_W[20][SIZEOF(L00_Y) + 1] = {{0.0f}};
-float             L01_Z[SIZEOF(L01_W)]         = {0.0f};
-float             L01_Y[SIZEOF(L01_Z)]         = {0.0f};
-float             L01_dY_dZ[SIZEOF(L01_Y)]     = {0.0f};
-float             L01_dE_dY[SIZEOF(L01_Y)]     = {0.0f};
-float             L01_LR                       = 0.01f;
-g_act_func_type_t L01_AF_TYPE                  = LEAKY_RELU;
-float             L01_AF_ARGS[1]               = {0.01f};
+float             L01_W[l01][l00 + 1] = {{0.0f}};
+float             L01_Z[l01]          = {0.0f};
+float             L01_Y[l01]          = {0.0f};
+float             L01_dY_dZ[l01]      = {0.0f};
+float             L01_dE_dY[l01]      = {0.0f};
+float             L01_LR              = 0.01f;
+g_act_func_type_t L01_AF_TYPE         = LEAKY_RELU;
+float             L01_AF_ARGS[1]      = {0.01f};
 
 // layer 2: hidden layer
-float             L02_W[20][SIZEOF(L01_Y) + 1] = {{0.0f}};
-float             L02_Z[SIZEOF(L02_W)]         = {0.0f};
-float             L02_Y[SIZEOF(L02_Z)]         = {0.0f};
-float             L02_dY_dZ[SIZEOF(L02_Y)]     = {0.0f};
-float             L02_dE_dY[SIZEOF(L02_Y)]     = {0.0f};
-float             L02_LR                       = 0.02f;
-g_act_func_type_t L02_AF_TYPE                  = LEAKY_RELU;
-float             L02_AF_ARGS[1]               = {0.01f};
+float             L02_W[l02][l01 + 1] = {{0.0f}};
+float             L02_Z[l02]          = {0.0f};
+float             L02_Y[l02]          = {0.0f};
+float             L02_dY_dZ[l02]      = {0.0f};
+float             L02_dE_dY[l02]      = {0.0f};
+float             L02_LR              = 0.02f;
+g_act_func_type_t L02_AF_TYPE         = LEAKY_RELU;
+float             L02_AF_ARGS[1]      = {0.01f};
 
 // layer 3: output layer
-float             L03_W[10][SIZEOF(L02_Y) + 1] = {{0.0f}};
-float             L03_Z[SIZEOF(L03_W)]         = {0.0f};
-float             L03_Y[SIZEOF(L03_Z)]         = {0.0f};
-float             L03_dY_dZ[SIZEOF(L03_Y)]     = {0.0f};
-float             L03_dE_dY[SIZEOF(L03_Y)]     = {0.0f};
-float             L03_LR                       = 0.03f;
-g_act_func_type_t L03_AF_TYPE                  = SIGMOID;
-float             L03_AF_ARGS[1]               = {0.0f};
+float             L03_W[l03][l02 + 1] = {{0.0f}};
+float             L03_Z[l03]          = {0.0f};
+float             L03_Y[l03]          = {0.0f};
+float             L03_dY_dZ[l03]      = {0.0f};
+float             L03_dE_dY[l03]      = {0.0f};
+float             L03_LR              = 0.03f;
+g_act_func_type_t L03_AF_TYPE         = SIGMOID;
+float             L03_AF_ARGS[1]      = {0.0f};
 
 // layer 3: actual outputs (Y target)
-float L03_YT[SIZEOF(L03_Y)] = {0.0f};
+float L03_YT[l03] = {0.0f};
 
 // -----------------------------------------------------------------------------
 // File Handles
@@ -200,6 +208,7 @@ static void process_arguments(int argc, char *argv[], bool *is_training) {
         }
 
         else if ((strcmp(arg, "--help") == 0) || (strcmp(arg, "-h") == 0)) {
+            // clang-format off
             fprintf(stderr, "Usage:\n");
             fprintf(stderr, "  %s -i [options]\n", filename);
             fprintf(stderr, "  %s -t [options]\n", filename);
@@ -214,6 +223,7 @@ static void process_arguments(int argc, char *argv[], bool *is_training) {
             fprintf(stderr, "  -s, --outputs-set <file>  The outputs set file (default: %s)\n", fnn_outputs_set);
             fprintf(stderr, "  -x, --weights-out <file>  The weights out file (default: %s)\n", fnn_weights_out);
             fprintf(stderr, "  -o, --outputs-out <file>  The outputs out file (default: %s)\n", fnn_outputs_out);
+            // clang-format on
             exit(0);
         }
 
@@ -282,16 +292,16 @@ int main(int argc, char *argv[]) {
 
     if (is_training) {
         printf("Network mode: training\n");
-        printf("  [IN ] Weights file: %s\n", fnn_weights_cfg);
-        printf("  [IN ] Dataset file: %s\n", fnn_dataset_set);
-        printf("  [IN ] Outputs file: %s\n", fnn_outputs_set);
-        printf("  [OUT] Weights file: %s\n", fnn_weights_out);
-        printf("  [OUT] Outputs file: %s\n", fnn_outputs_out);
+        printf("  [in ] Weights file: %s\n", fnn_weights_cfg);
+        printf("  [in ] Dataset file: %s\n", fnn_dataset_set);
+        printf("  [in ] Outputs file: %s\n", fnn_outputs_set);
+        printf("  [out] Weights file: %s\n", fnn_weights_out);
+        printf("  [out] Outputs file: %s\n", fnn_outputs_out);
     } else {
         printf("Network mode: inference\n");
-        printf("  [IN ] Weights file: %s\n", fnn_weights_cfg);
-        printf("  [IN ] Dataset file: %s\n", fnn_dataset_set);
-        printf("  [OUT] Outputs file: %s\n", fnn_outputs_out);
+        printf("  [in ] Weights file: %s\n", fnn_weights_cfg);
+        printf("  [in ] Dataset file: %s\n", fnn_dataset_set);
+        printf("  [out] Outputs file: %s\n", fnn_outputs_out);
     }
 
     // register cleanup handler
@@ -301,9 +311,9 @@ int main(int argc, char *argv[]) {
     // page structure
     // -------------------------------------------------------------------------
 
-    g_page_t page[3];
+    g_page_t page[lho];
 
-    for (int k = 0; k < SIZEOF(page); ++k) {
+    for (int k = 0; k < lho; ++k) {
         g_layer_page_reset(&page[k]);
         page[k].l_id = k;
     }
