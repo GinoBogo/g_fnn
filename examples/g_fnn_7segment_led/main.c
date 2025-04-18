@@ -93,15 +93,37 @@ static void cleanup_resources(void) {
 // Network Mode: TRAINING
 // -----------------------------------------------------------------------------
 
-void training_mode(g_network_t *network, g_pages_t *pages) {
+static void save_weights_to_file(FILE *file, g_pages_t *pages) {
+    if ((file == NULL) || (pages == NULL)) {
+        exit(1);
+    }
+
+    char remark[32] = {0};
+    for (int k = 0; k < pages->len; ++k) {
+        snprintf(remark, sizeof(remark), "Layer %d weights", k);
+
+        data_writer_next_remark(file, remark);
+        data_writer_next_matrix(file, &pages->ptr[k].w);
+    }
+}
+
+static void training_mode(g_network_t *network, g_pages_t *pages) {
     // layer 3: actual outputs
     f_vector_t actual_outputs;
     actual_outputs.ptr = &L03_YT[0];
     actual_outputs.len = SIZEOF(L03_YT);
 
+    // weights input file
     file_weights_cfg = data_reader_open(fnn_weights_cfg);
     if (file_weights_cfg == NULL) {
         network->Init_Weights(network, 0.5f);
+
+        file_weights_cfg = data_writer_open(fnn_weights_cfg);
+        if (file_weights_cfg == NULL) {
+            exit(1);
+        }
+
+        save_weights_to_file(file_weights_cfg, pages);
     } else {
         for (int k = 0; k < pages->len; ++k) {
             if (!data_reader_next_matrix(file_weights_cfg, &pages->ptr[k].w)) {
@@ -111,12 +133,14 @@ void training_mode(g_network_t *network, g_pages_t *pages) {
         }
     }
 
+    // outputs file
     file_outputs_set = data_reader_open(fnn_outputs_set);
     if (file_outputs_set == NULL) {
         network->Destroy(network);
         exit(1);
     }
 
+    // weights output file
     file_weights_out = data_writer_open(fnn_weights_out);
     if (file_weights_out == NULL) {
         network->Destroy(network);
@@ -141,20 +165,14 @@ void training_mode(g_network_t *network, g_pages_t *pages) {
         }
     }
 
-    // save weights to file
-    data_writer_next_remark(file_weights_out, "Layer 1 weights");
-    data_writer_next_matrix(file_weights_out, &pages->ptr[0].w);
-    data_writer_next_remark(file_weights_out, "Layer 2 weights");
-    data_writer_next_matrix(file_weights_out, &pages->ptr[1].w);
-    data_writer_next_remark(file_weights_out, "Layer 3 weights");
-    data_writer_next_matrix(file_weights_out, &pages->ptr[2].w);
+    save_weights_to_file(file_weights_out, pages);
 }
 
 // -----------------------------------------------------------------------------
 // Network Mode: INFERENCE
 // -----------------------------------------------------------------------------
 
-void inference_mode(g_network_t *network, g_pages_t *pages) {
+static void inference_mode(g_network_t *network, g_pages_t *pages) {
     // load weights from file
     file_weights_cfg = data_reader_open(fnn_weights_cfg);
     if (file_weights_cfg == NULL) {
