@@ -29,6 +29,7 @@ add_executable(
     "../../src/g_layer.c"
     "../../src/g_network.c"
     "../../src/g_random.c"
+    "fnn_layout.c"
     "main.c"
 )
 

@@ -13,13 +13,8 @@
 
 #include "data_reader.h"
 #include "data_writer.h"
+#include "g_layer.h"
 #include "g_network.h"
-
-// -----------------------------------------------------------------------------
-// Local Definitions
-// -----------------------------------------------------------------------------
-
-#define SIZEOF(x) ((int)(sizeof(x) / sizeof(x[0])))
 
 // -----------------------------------------------------------------------------
 // Neural Network Layout
@@ -72,8 +67,8 @@ static void save_weights_to_file(FILE *file, g_pages_t *pages) {
 static void training_mode(g_network_t *network, g_pages_t *pages) {
     // layer 3: actual outputs
     f_vector_t actual_outputs;
-    actual_outputs.ptr = &L03_YT[0];
-    actual_outputs.len = SIZEOF(L03_YT);
+    actual_outputs.ptr = &OUT_YT[0];
+    actual_outputs.len = SIZEOF(OUT_YT);
 
     // weights input file
     file_weights_cfg = data_reader_open(fnn_weights_cfg);
@@ -288,76 +283,15 @@ int main(int argc, char *argv[]) {
     atexit(cleanup_resources);
 
     // -------------------------------------------------------------------------
-    // page structure
-    // -------------------------------------------------------------------------
-
-    g_page_t page[lho];
-
-    for (int k = 0; k < lho; ++k) {
-        g_layer_page_reset(&page[k]);
-        page[k].l_id = k;
-    }
-
-    // layer 1: hidden layer
-    page[0].x.ptr       = &L00_Y[0];
-    page[0].x.len       = SIZEOF(L00_Y);
-    page[0].w.ptr       = &L01_W[0][0];
-    page[0].w.row       = SIZEOF(L01_W);
-    page[0].w.col       = SIZEOF(L01_W[0]);
-    page[0].z.ptr       = &L01_Z[0];
-    page[0].z.len       = SIZEOF(L01_Z);
-    page[0].y.ptr       = &L01_Y[0];
-    page[0].y.len       = SIZEOF(L01_Y);
-    page[0].dy_dz.ptr   = &L01_dY_dZ[0];
-    page[0].dy_dz.len   = SIZEOF(L01_dY_dZ);
-    page[0].de_dy.ptr   = &L01_dE_dY[0];
-    page[0].de_dy.len   = SIZEOF(L01_dE_dY);
-    page[0].lr          = L01_LR;
-    page[0].af_type     = L01_AF_TYPE;
-    page[0].af_args.ptr = L01_AF_ARGS;
-    page[0].af_args.len = SIZEOF(L01_AF_ARGS);
-
-    // layer 2: hidden layer
-    page[1].x.ptr       = &L01_Y[0];
-    page[1].x.len       = SIZEOF(L01_Y);
-    page[1].w.ptr       = &L02_W[0][0];
-    page[1].w.row       = SIZEOF(L02_W);
-    page[1].w.col       = SIZEOF(L02_W[0]);
-    page[1].z.ptr       = &L02_Z[0];
-    page[1].z.len       = SIZEOF(L02_Z);
-    page[1].y.ptr       = &L02_Y[0];
-    page[1].y.len       = SIZEOF(L02_Y);
-    page[1].dy_dz.ptr   = &L02_dY_dZ[0];
-    page[1].dy_dz.len   = SIZEOF(L02_dY_dZ);
-    page[1].de_dy.ptr   = &L02_dE_dY[0];
-    page[1].de_dy.len   = SIZEOF(L02_dE_dY);
-    page[1].lr          = L02_LR;
-    page[1].af_type     = L02_AF_TYPE;
-    page[1].af_args.ptr = L02_AF_ARGS;
-    page[1].af_args.len = SIZEOF(L02_AF_ARGS);
-
-    // layer 3: output layer
-    page[2].x.ptr       = &L02_Y[0];
-    page[2].x.len       = SIZEOF(L02_Y);
-    page[2].w.ptr       = &L03_W[0][0];
-    page[2].w.row       = SIZEOF(L03_W);
-    page[2].w.col       = SIZEOF(L03_W[0]);
-    page[2].z.ptr       = &L03_Z[0];
-    page[2].z.len       = SIZEOF(L03_Z);
-    page[2].y.ptr       = &L03_Y[0];
-    page[2].y.len       = SIZEOF(L03_Y);
-    page[2].dy_dz.ptr   = &L03_dY_dZ[0];
-    page[2].dy_dz.len   = SIZEOF(L03_dY_dZ);
-    page[2].de_dy.ptr   = &L03_dE_dY[0];
-    page[2].de_dy.len   = SIZEOF(L03_dE_dY);
-    page[2].lr          = L03_LR;
-    page[2].af_type     = L03_AF_TYPE;
-    page[2].af_args.ptr = L03_AF_ARGS;
-    page[2].af_args.len = SIZEOF(L03_AF_ARGS);
-
-    // -------------------------------------------------------------------------
     // pages structure
     // -------------------------------------------------------------------------
+
+    for (int k = 0; k < SIZEOF(page); k++) {
+        g_layer_page_reset(&page[k]);
+    }
+
+    fnn_layout_to_pages();
+
     g_pages_t pages;
 
     pages.ptr = &page[0];
