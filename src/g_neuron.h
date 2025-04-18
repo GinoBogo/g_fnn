@@ -44,4 +44,4 @@ extern bool g_neuron_page_check(g_page_t *page, int n_id);
 #endif // G_NEURON_H
 
 // -----------------------------------------------------------------------------
-// End Of File
+// End of File

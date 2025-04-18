@@ -20,4 +20,4 @@ float g_random_range(float min, float max);
 #endif // G_RANDOM_H
 
 // -----------------------------------------------------------------------------
-// End Of File
+// End of File

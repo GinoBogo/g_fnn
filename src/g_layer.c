@@ -345,4 +345,4 @@ bool g_layer_page_check(g_page_t *page, int l_id) {
 }
 
 // -----------------------------------------------------------------------------
-// End Of File
+// End of File

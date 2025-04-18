@@ -138,4 +138,4 @@ bool data_reader_next_matrix(FILE *file, f_matrix_t *matrix_ptr) {
 }
 
 // -----------------------------------------------------------------------------
-// End Of File
+// End of File

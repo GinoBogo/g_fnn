@@ -61,4 +61,4 @@ float g_random_range(float min, float max) {
 }
 
 // -----------------------------------------------------------------------------
-// End Of File
+// End of File

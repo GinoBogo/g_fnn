@@ -46,4 +46,4 @@ float *f_matrix_at(f_matrix_t *mat, int row, int col) {
 }
 
 // -----------------------------------------------------------------------------
-// End Of File
+// End of File

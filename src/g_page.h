@@ -88,4 +88,4 @@ typedef struct g_pages_t {
 #endif // G_PAGE_H
 
 // -----------------------------------------------------------------------------
-// End Of File
+// End of File

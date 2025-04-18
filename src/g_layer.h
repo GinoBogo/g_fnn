@@ -47,4 +47,4 @@ extern bool g_layer_page_check(g_page_t *page, int l_id);
 #endif // G_LAYER_H
 
 // -----------------------------------------------------------------------------
-// End Of File
+// End of File

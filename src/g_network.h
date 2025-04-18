@@ -44,4 +44,4 @@ extern bool g_network_pages_check(g_pages_t *pages);
 #endif // G_NETWORK_H
 
 // -----------------------------------------------------------------------------
-// End Of File
+// End of File
