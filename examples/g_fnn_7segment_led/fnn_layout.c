@@ -49,6 +49,7 @@ g_page_t page[3];
 
 void fnn_layout_to_pages(void) {
     // Layer 1
+    g_page_reset(&page[0]);
     page[0].l_id        = 0;
     page[0].x.ptr       = L00_Y;
     page[0].x.len       = SIZEOF(L00_Y);
@@ -68,6 +69,7 @@ void fnn_layout_to_pages(void) {
     page[0].af_args.ptr = L01_AF_ARGS;
     page[0].af_args.len = SIZEOF(L01_AF_ARGS);
     // Layer 2
+    g_page_reset(&page[1]);
     page[1].l_id        = 1;
     page[1].x.ptr       = L01_Y;
     page[1].x.len       = SIZEOF(L01_Y);
@@ -87,6 +89,7 @@ void fnn_layout_to_pages(void) {
     page[1].af_args.ptr = L02_AF_ARGS;
     page[1].af_args.len = SIZEOF(L02_AF_ARGS);
     // Layer 3
+    g_page_reset(&page[2]);
     page[2].l_id        = 2;
     page[2].x.ptr       = L02_Y;
     page[2].x.len       = SIZEOF(L02_Y);

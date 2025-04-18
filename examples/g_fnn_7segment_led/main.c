@@ -13,7 +13,6 @@
 
 #include "data_reader.h"
 #include "data_writer.h"
-#include "g_layer.h"
 #include "g_network.h"
 
 // -----------------------------------------------------------------------------
@@ -285,10 +284,6 @@ int main(int argc, char *argv[]) {
     // -------------------------------------------------------------------------
     // pages structure
     // -------------------------------------------------------------------------
-
-    for (int k = 0; k < SIZEOF(page); k++) {
-        g_layer_page_reset(&page[k]);
-    }
 
     fnn_layout_to_pages();
 
