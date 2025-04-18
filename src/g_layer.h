@@ -40,8 +40,6 @@ typedef struct g_layers_t {
 
 extern void g_layer_link(g_layer_t *self);
 
-extern void g_layer_page_reset(g_page_t *page);
-
 extern bool g_layer_page_check(g_page_t *page, int l_id);
 
 #endif // G_LAYER_H

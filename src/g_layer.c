@@ -241,33 +241,6 @@ void g_layer_link(g_layer_t *self) {
     }
 }
 
-void g_layer_page_reset(g_page_t *page) {
-    if (page != NULL) {
-        page->l_id = -1;
-        // forward propagation
-        page->x.ptr = NULL;
-        page->x.len = 0;
-        page->w.ptr = NULL;
-        page->w.row = 0;
-        page->w.col = 0;
-        page->z.ptr = NULL;
-        page->z.len = 0;
-        page->y.ptr = NULL;
-        page->y.len = 0;
-
-        // backward propagation
-        page->dy_dz.ptr = NULL;
-        page->dy_dz.len = 0;
-        page->de_dy.ptr = NULL;
-        page->de_dy.len = 0;
-
-        page->af_type     = UNKNOWN;
-        page->af_call     = NULL;
-        page->af_args.ptr = NULL;
-        page->af_args.len = 0;
-    }
-}
-
 bool g_layer_page_check(g_page_t *page, int l_id) {
     bool rvalue = page != NULL;
 
