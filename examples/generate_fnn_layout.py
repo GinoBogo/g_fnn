@@ -31,6 +31,7 @@ extern g_page_t page[{n_pages}];
 extern float    OUT_YT[{out_size}];
 
 void fnn_layout_to_pages(void);
+
 #ifdef __cplusplus
 }}
 #endif
@@ -64,7 +65,15 @@ void fnn_layout_to_pages(void) {{
 """
 
 ACTIVATION_FUNCTIONS = [
-    "LINEAR", "TANH", "RELU", "LEAKY_RELU", "PRELU", "SWISH", "ELU", "SIGMOID", "SOFTMAX"
+    "LINEAR",
+    "TANH",
+    "RELU",
+    "LEAKY_RELU",
+    "PRELU",
+    "SWISH",
+    "ELU",
+    "SIGMOID",
+    "SOFTMAX",
 ]
 
 AF_ARGS_INIT = {
@@ -214,6 +223,7 @@ def generate_linking_body(layers):
             ("af_args.len", f"SIZEOF({lname}_AF_ARGS)"),
         ]
         lines.append(f"    // Layer {i}")
+        lines.append(f"    g_page_reset(&page[{idx}]);")
         max_field = max(len(a[0]) for a in assigns)
         for field, value in assigns:
             lines.append(f"    page[{idx}].{field.ljust(max_field)} = {value};")
