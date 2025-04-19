@@ -22,16 +22,22 @@
 #include "fnn_layout.h"
 
 // -----------------------------------------------------------------------------
-// Error Codes
+// Error Codes & Network Modes
 // -----------------------------------------------------------------------------
 
-enum {
+typedef enum {
     ERR_NONE = 0,
     ERR_ARGS = 1,
     ERR_NULL = 2,
     ERR_FILE = 3,
-    ERR_DATA = 4,
-};
+    ERR_DATA = 4
+} error_codes_t;
+
+typedef enum {
+    TRAINING   = 0,
+    INFERENCE  = 1,
+    VALIDATION = 2
+} network_modes_t;
 
 // -----------------------------------------------------------------------------
 // File Handles
@@ -81,12 +87,13 @@ static void training_mode(g_network_t *network, g_pages_t *pages) {
     actual_outputs.ptr = &OUT_YT[0];
     actual_outputs.len = SIZEOF(OUT_YT);
 
-    // weights input file
+    // load weights from file
     file_weights_cfg = data_reader_open(fnn_weights_cfg);
     if (file_weights_cfg == NULL) {
         printf("[ALERT] Creating random weights file '%s'...\n", fnn_weights_cfg);
         network->Init_Weights(network, 0.5f);
 
+        // save weights to file
         file_weights_cfg = data_writer_open(fnn_weights_cfg);
         if (file_weights_cfg == NULL) {
             exit(ERR_FILE);
@@ -102,19 +109,21 @@ static void training_mode(g_network_t *network, g_pages_t *pages) {
         }
     }
 
-    // outputs file
+    // load outputs from file
     file_outputs_set = data_reader_open(fnn_outputs_set);
     if (file_outputs_set == NULL) {
         network->Destroy(network);
         exit(ERR_FILE);
     }
 
-    // weights output file
+    // save weights to file
     file_weights_out = data_writer_open(fnn_weights_out);
     if (file_weights_out == NULL) {
         network->Destroy(network);
         exit(ERR_FILE);
     }
+
+    const int L = pages->len - 1;
 
     // load dataset from file
     while (data_reader_next_vector(file_dataset_set, &pages->ptr[0].x)) {
@@ -128,7 +137,6 @@ static void training_mode(g_network_t *network, g_pages_t *pages) {
         }
 
         // save outputs to file
-        const int L = pages->len - 1;
         if (!data_writer_next_vector(file_outputs_out, &pages->ptr[L].y)) {
             network->Destroy(network);
             exit(ERR_DATA);
@@ -156,7 +164,6 @@ static void inference_mode(g_network_t *network, g_pages_t *pages) {
             exit(ERR_DATA);
         }
     }
-    data_reader_close(&file_weights_cfg);
 
     // load dataset from file
     while (data_reader_next_vector(file_dataset_set, &pages->ptr[0].x)) {
@@ -172,10 +179,88 @@ static void inference_mode(g_network_t *network, g_pages_t *pages) {
 }
 
 // -----------------------------------------------------------------------------
+// Network Mode: VALIDATION
+// -----------------------------------------------------------------------------
+
+static void validation_mode(g_network_t *network, g_pages_t *pages) {
+    // layer 3: actual outputs
+    f_vector_t actual_outputs;
+    actual_outputs.ptr = &OUT_YT[0];
+    actual_outputs.len = SIZEOF(OUT_YT);
+
+    // load weights from file
+    file_weights_cfg = data_reader_open(fnn_weights_cfg);
+    if (file_weights_cfg == NULL) {
+        network->Destroy(network);
+        exit(ERR_FILE);
+    }
+
+    for (int k = 0; k < pages->len; ++k) {
+        if (!data_reader_next_matrix(file_weights_cfg, &pages->ptr[k].w)) {
+            network->Destroy(network);
+            exit(ERR_DATA);
+        }
+    }
+
+    // load outputs from file
+    file_outputs_set = data_reader_open(fnn_outputs_set);
+    if (file_outputs_set == NULL) {
+        network->Destroy(network);
+        exit(ERR_FILE);
+    }
+
+    const int L = pages->len - 1;
+    const int P = pages->ptr[L].y.len;
+
+    int total_samples = 0;
+    int total_errors  = 0;
+
+    // load dataset from file
+    while (data_reader_next_vector(file_dataset_set, &pages->ptr[0].x)) {
+        network->Step_Forward(network);
+
+        float y_max = 0.0f;
+        for (int i = 0; i < P; ++i) {
+            if (pages->ptr[L].y.ptr[i] > y_max) {
+                y_max = pages->ptr[L].y.ptr[i];
+            }
+        }
+
+        for (int i = 0; i < P; ++i) {
+            float y_val = pages->ptr[L].y.ptr[i];
+
+            pages->ptr[L].y.ptr[i] = (y_val < y_max) ? 0.0f : 1.0f;
+        }
+
+        if (data_reader_next_vector(file_outputs_set, &actual_outputs)) {
+            total_samples++;
+
+            for (int i = 0; i < P; ++i) {
+                if (pages->ptr[L].y.ptr[i] != actual_outputs.ptr[i]) {
+                    total_errors++;
+                    break;
+                }
+            }
+        }
+
+        // save outputs to file
+        if (!data_writer_next_vector(file_outputs_out, &pages->ptr[L].y)) {
+            network->Destroy(network);
+            exit(ERR_DATA);
+        }
+    }
+
+    float accuracy = (float)(total_samples - total_errors) / total_samples;
+    printf("[INFO] Total samples   : %d\n", total_samples);
+    printf("[INFO] Total errors    : %d\n", total_errors);
+    printf("[INFO] Network accuracy: %.2f%%\n", 100.0f * accuracy);
+}
+
+// -----------------------------------------------------------------------------
 // Argument Processing
 // -----------------------------------------------------------------------------
 
-static void process_arguments(int argc, char *argv[], bool *is_training) {
+static void process_arguments(int argc, char *argv[], network_modes_t *mode) {
     const char *filename = basename(argv[0]);
 
     if (argc == 1) {
@@ -187,23 +272,29 @@ static void process_arguments(int argc, char *argv[], bool *is_training) {
     for (int i = 1; i < argc; i++) {
         const char *arg = argv[i];
 
-        if ((strcmp(arg, "--infer") == 0) || (strcmp(arg, "-i") == 0)) {
-            *is_training = false;
+        if ((strcmp(arg, "--train") == 0) || (strcmp(arg, "-t") == 0)) {
+            *mode = TRAINING;
         }
 
-        else if ((strcmp(arg, "--train") == 0) || (strcmp(arg, "-t") == 0)) {
-            *is_training = true;
+        else if ((strcmp(arg, "--infer") == 0) || (strcmp(arg, "-i") == 0)) {
+            *mode = INFERENCE;
+        }
+
+        else if ((strcmp(arg, "--valid") == 0) || (strcmp(arg, "-v") == 0)) {
+            *mode = VALIDATION;
         }
 
         else if ((strcmp(arg, "--help") == 0) || (strcmp(arg, "-h") == 0)) {
             // clang-format off
             fprintf(stderr, "Usage:\n");
-            fprintf(stderr, "  %s -i [options]\n", filename);
             fprintf(stderr, "  %s -t [options]\n", filename);
+            fprintf(stderr, "  %s -i [options]\n", filename);
+            fprintf(stderr, "  %s -v [options]\n", filename);
             fprintf(stderr, "  %s -h\n", filename);
             fprintf(stderr, "Commands:\n");
-            fprintf(stderr, "  -i, --infer               Run in inference mode\n");
             fprintf(stderr, "  -t, --train               Run in training mode\n");
+            fprintf(stderr, "  -i, --infer               Run in inference mode\n");
+            fprintf(stderr, "  -v, --valid               Run in validation mode\n");
             fprintf(stderr, "  -h, --help                Show this help message\n");
             fprintf(stderr, "Options:\n");
             fprintf(stderr, "  -w, --weights-cfg <file>  The weights cfg file (default: %s)\n", fnn_weights_cfg);
@@ -273,37 +364,43 @@ static void process_arguments(int argc, char *argv[], bool *is_training) {
 // -----------------------------------------------------------------------------
 
 int main(int argc, char *argv[]) {
-    bool is_training = false;
+    network_modes_t network_mode = TRAINING;
 
     // process command-line arguments
-    process_arguments(argc, argv, &is_training);
+    process_arguments(argc, argv, &network_mode);
 
-    if (is_training) {
-        printf("Network mode: training\n");
-        printf("  [in ] Weights file: %s\n", fnn_weights_cfg);
-        printf("  [in ] Dataset file: %s\n", fnn_dataset_set);
-        printf("  [in ] Outputs file: %s\n", fnn_outputs_set);
-        printf("  [out] Weights file: %s\n", fnn_weights_out);
-        printf("  [out] Outputs file: %s\n", fnn_outputs_out);
-    } else {
-        printf("Network mode: inference\n");
-        printf("  [in ] Weights file: %s\n", fnn_weights_cfg);
-        printf("  [in ] Dataset file: %s\n", fnn_dataset_set);
-        printf("  [out] Outputs file: %s\n", fnn_outputs_out);
+    switch (network_mode) {
+        case TRAINING:
+            printf("Network mode: training\n");
+            printf(" ―→█   Weights file: %s\n", fnn_weights_cfg);
+            printf(" ―→█   Dataset file: %s\n", fnn_dataset_set);
+            printf(" ―→█   Outputs file: %s\n", fnn_outputs_set);
+            printf("   █―→ Weights file: %s\n", fnn_weights_out);
+            printf("   █―→ Outputs file: %s\n", fnn_outputs_out);
+            break;
+        case INFERENCE:
+            printf("Network mode: inference\n");
+            printf(" ―→█   Weights file: %s\n", fnn_weights_cfg);
+            printf(" ―→█   Dataset file: %s\n", fnn_dataset_set);
+            printf("   █―→ Outputs file: %s\n", fnn_outputs_out);
+            break;
+        case VALIDATION:
+            printf("Network mode: validation\n");
+            printf(" ―→█   Weights file: %s\n", fnn_weights_cfg);
+            printf(" ―→█   Dataset file: %s\n", fnn_dataset_set);
+            printf(" ―→█   Outputs file: %s\n", fnn_outputs_set);
+            printf("   █―→ Outputs file: %s\n", fnn_outputs_out);
+            break;
+        default:
+            exit(ERR_ARGS);
     }
 
     // register cleanup handler
     atexit(cleanup_resources);
 
-    // -------------------------------------------------------------------------
-    // pages structure
-    // -------------------------------------------------------------------------
-
+    // network layout & structure
     g_pages_t pages = fnn_layout_to_pages();
 
-    // -------------------------------------------------------------------------
-    // network structure
-    // -------------------------------------------------------------------------
     g_network_t network;
 
     g_network_link(&network);
@@ -313,21 +410,31 @@ int main(int argc, char *argv[]) {
         file_dataset_set = data_reader_open(fnn_dataset_set);
         if (file_dataset_set == NULL) {
             network.Destroy(&network);
-            return ERR_FILE;
+            exit(ERR_FILE);
         }
 
         // save outputs to file
         file_outputs_out = data_writer_open(fnn_outputs_out);
         if (file_outputs_out == NULL) {
             network.Destroy(&network);
-            return ERR_FILE;
+            exit(ERR_FILE);
         }
 
-        if (is_training) {
-            training_mode(&network, &pages);
-        } else {
-            inference_mode(&network, &pages);
+        // execution mode
+        switch (network_mode) {
+            case TRAINING:
+                training_mode(&network, &pages);
+                break;
+            case INFERENCE:
+                inference_mode(&network, &pages);
+                break;
+            case VALIDATION:
+                validation_mode(&network, &pages);
+                break;
+            default:
+                exit(ERR_ARGS);
         }
+
         network.Destroy(&network);
     }
 
