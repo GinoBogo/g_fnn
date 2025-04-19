@@ -30,7 +30,7 @@ extern "C" {{
 extern g_page_t page[{n_pages}];
 extern float    OUT_YT[{out_size}];
 
-void fnn_layout_to_pages(void);
+g_pages_t fnn_layout_to_pages(void);
 
 #ifdef __cplusplus
 }}
@@ -56,8 +56,10 @@ HEADER_C = """
 {data_arrays}
 g_page_t page[{n_pages}];
 
-void fnn_layout_to_pages(void) {{
+g_pages_t fnn_layout_to_pages(void) {{
 {body}
+
+    return (g_pages_t){{.ptr = page, .len = SIZEOF(page)}};
 }}
 
 // -----------------------------------------------------------------------------
