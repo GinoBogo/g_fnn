@@ -72,6 +72,7 @@ static void training_mode(g_network_t *network, g_pages_t *pages) {
     // weights input file
     file_weights_cfg = data_reader_open(fnn_weights_cfg);
     if (file_weights_cfg == NULL) {
+        printf("[ALERT] Creating random weights file '%s'...\n", fnn_weights_cfg);
         network->Init_Weights(network, 0.5f);
 
         file_weights_cfg = data_writer_open(fnn_weights_cfg);
