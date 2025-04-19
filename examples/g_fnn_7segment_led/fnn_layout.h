@@ -21,7 +21,7 @@ extern "C" {
 extern g_page_t page[3];
 extern float    OUT_YT[10];
 
-void fnn_layout_to_pages(void);
+g_pages_t fnn_layout_to_pages(void);
 
 #ifdef __cplusplus
 }

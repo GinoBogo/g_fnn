@@ -286,12 +286,7 @@ int main(int argc, char *argv[]) {
     // pages structure
     // -------------------------------------------------------------------------
 
-    fnn_layout_to_pages();
-
-    g_pages_t pages;
-
-    pages.ptr = &page[0];
-    pages.len = SIZEOF(page);
+    g_pages_t pages = fnn_layout_to_pages();
 
     // -------------------------------------------------------------------------
     // network structure

@@ -47,7 +47,7 @@ float OUT_YT[10] = {0.0f};
 
 g_page_t page[3];
 
-void fnn_layout_to_pages(void) {
+g_pages_t fnn_layout_to_pages(void) {
     // Layer 1
     g_page_reset(&page[0]);
     page[0].l_id        = 0;
@@ -108,6 +108,8 @@ void fnn_layout_to_pages(void) {
     page[2].af_type     = L03_AF_TYPE;
     page[2].af_args.ptr = L03_AF_ARGS;
     page[2].af_args.len = SIZEOF(L03_AF_ARGS);
+
+    return (g_pages_t){.ptr = page, .len = SIZEOF(page)};
 }
 
 // -----------------------------------------------------------------------------
