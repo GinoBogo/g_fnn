@@ -22,6 +22,18 @@
 #include "fnn_layout.h"
 
 // -----------------------------------------------------------------------------
+// Error Codes
+// -----------------------------------------------------------------------------
+
+enum {
+    ERR_NONE = 0,
+    ERR_ARGS = 1,
+    ERR_NULL = 2,
+    ERR_FILE = 3,
+    ERR_DATA = 4,
+};
+
+// -----------------------------------------------------------------------------
 // File Handles
 // -----------------------------------------------------------------------------
 
@@ -51,7 +63,7 @@ static void cleanup_resources(void) {
 
 static void save_weights_to_file(FILE *file, g_pages_t *pages) {
     if ((file == NULL) || (pages == NULL)) {
-        exit(1);
+        exit(ERR_NULL);
     }
 
     char remark[32] = {0};
@@ -77,7 +89,7 @@ static void training_mode(g_network_t *network, g_pages_t *pages) {
 
         file_weights_cfg = data_writer_open(fnn_weights_cfg);
         if (file_weights_cfg == NULL) {
-            exit(1);
+            exit(ERR_FILE);
         }
 
         save_weights_to_file(file_weights_cfg, pages);
@@ -85,7 +97,7 @@ static void training_mode(g_network_t *network, g_pages_t *pages) {
         for (int k = 0; k < pages->len; ++k) {
             if (!data_reader_next_matrix(file_weights_cfg, &pages->ptr[k].w)) {
                 network->Destroy(network);
-                exit(1);
+                exit(ERR_DATA);
             }
         }
     }
@@ -94,14 +106,14 @@ static void training_mode(g_network_t *network, g_pages_t *pages) {
     file_outputs_set = data_reader_open(fnn_outputs_set);
     if (file_outputs_set == NULL) {
         network->Destroy(network);
-        exit(1);
+        exit(ERR_FILE);
     }
 
     // weights output file
     file_weights_out = data_writer_open(fnn_weights_out);
     if (file_weights_out == NULL) {
         network->Destroy(network);
-        exit(1);
+        exit(ERR_FILE);
     }
 
     // load dataset from file
@@ -118,7 +130,8 @@ static void training_mode(g_network_t *network, g_pages_t *pages) {
         // save outputs to file
         const int L = pages->len - 1;
         if (!data_writer_next_vector(file_outputs_out, &pages->ptr[L].y)) {
-            exit(1);
+            network->Destroy(network);
+            exit(ERR_DATA);
         }
     }
 
@@ -134,13 +147,13 @@ static void inference_mode(g_network_t *network, g_pages_t *pages) {
     file_weights_cfg = data_reader_open(fnn_weights_cfg);
     if (file_weights_cfg == NULL) {
         network->Destroy(network);
-        exit(1);
+        exit(ERR_FILE);
     }
 
     for (int k = 0; k < pages->len; ++k) {
         if (!data_reader_next_matrix(file_weights_cfg, &pages->ptr[k].w)) {
             network->Destroy(network);
-            exit(1);
+            exit(ERR_DATA);
         }
     }
     data_reader_close(&file_weights_cfg);
@@ -153,7 +166,7 @@ static void inference_mode(g_network_t *network, g_pages_t *pages) {
         const int L = pages->len - 1;
         if (!data_writer_next_vector(file_outputs_out, &pages->ptr[L].y)) {
             network->Destroy(network);
-            exit(1);
+            exit(ERR_DATA);
         }
     }
 }
@@ -168,7 +181,7 @@ static void process_arguments(int argc, char *argv[], bool *is_training) {
     if (argc == 1) {
         fprintf(stderr, "Error: No arguments provided\n");
         fprintf(stderr, "For more information use: %s --help\n", filename);
-        exit(1);
+        exit(ERR_ARGS);
     }
 
     for (int i = 1; i < argc; i++) {
@@ -199,7 +212,7 @@ static void process_arguments(int argc, char *argv[], bool *is_training) {
             fprintf(stderr, "  -x, --weights-out <file>  The weights out file (default: %s)\n", fnn_weights_out);
             fprintf(stderr, "  -o, --outputs-out <file>  The outputs out file (default: %s)\n", fnn_outputs_out);
             // clang-format on
-            exit(0);
+            exit(ERR_NONE);
         }
 
         else if ((strcmp(arg, "--weights-cfg") == 0) || (strcmp(arg, "-w") == 0)) {
@@ -207,7 +220,7 @@ static void process_arguments(int argc, char *argv[], bool *is_training) {
                 fnn_weights_cfg = argv[++i];
             } else {
                 fprintf(stderr, "Error: Missing argument for --weights-cfg\n");
-                exit(1);
+                exit(ERR_ARGS);
             }
         }
 
@@ -216,7 +229,7 @@ static void process_arguments(int argc, char *argv[], bool *is_training) {
                 fnn_dataset_set = argv[++i];
             } else {
                 fprintf(stderr, "Error: Missing argument for --dataset-set\n");
-                exit(1);
+                exit(ERR_ARGS);
             }
         }
 
@@ -225,7 +238,7 @@ static void process_arguments(int argc, char *argv[], bool *is_training) {
                 fnn_outputs_set = argv[++i];
             } else {
                 fprintf(stderr, "Error: Missing argument for --outputs-set\n");
-                exit(1);
+                exit(ERR_ARGS);
             }
         }
 
@@ -234,7 +247,7 @@ static void process_arguments(int argc, char *argv[], bool *is_training) {
                 fnn_weights_out = argv[++i];
             } else {
                 fprintf(stderr, "Error: Missing argument for --weights-out\n");
-                exit(1);
+                exit(ERR_ARGS);
             }
         }
 
@@ -243,14 +256,14 @@ static void process_arguments(int argc, char *argv[], bool *is_training) {
                 fnn_outputs_out = argv[++i];
             } else {
                 fprintf(stderr, "Error: Missing argument for --outputs-out\n");
-                exit(1);
+                exit(ERR_ARGS);
             }
         }
 
         else {
             fprintf(stderr, "Error: Unknown argument '%s'\n", arg);
             fprintf(stderr, "For more information use: %s --help\n", filename);
-            exit(1);
+            exit(ERR_ARGS);
         }
     }
 }
@@ -300,14 +313,14 @@ int main(int argc, char *argv[]) {
         file_dataset_set = data_reader_open(fnn_dataset_set);
         if (file_dataset_set == NULL) {
             network.Destroy(&network);
-            return 1;
+            return ERR_FILE;
         }
 
         // save outputs to file
         file_outputs_out = data_writer_open(fnn_outputs_out);
         if (file_outputs_out == NULL) {
             network.Destroy(&network);
-            return 1;
+            return ERR_FILE;
         }
 
         if (is_training) {
@@ -321,7 +334,7 @@ int main(int argc, char *argv[]) {
     cleanup_resources();
 
     puts("... Done!");
-    return 0;
+    return ERR_NONE;
 }
 
 // -----------------------------------------------------------------------------
