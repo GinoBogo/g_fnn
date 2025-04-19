@@ -64,6 +64,7 @@ void g_page_reset(g_page_t *page) {
         page->dy_dz.len = 0;
         page->de_dy.ptr = NULL;
         page->de_dy.len = 0;
+        page->lr        = 0.0f;
 
         page->af_type     = UNKNOWN;
         page->af_call     = NULL;
