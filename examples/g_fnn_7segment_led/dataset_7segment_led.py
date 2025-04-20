@@ -42,10 +42,25 @@ parser.add_argument(
     "dataset_size", type=int, help="Size of the dataset (positive integer)."
 )
 parser.add_argument(
+    "-e",
     "--error_max",
     type=float,
     default=0.0,
     help="Maximum value of error injection to add to 1.0 and 0.0 (default: 0.0).",
+)
+parser.add_argument(
+    "-d",
+    "--dataset",
+    type=str,
+    default="fnn_dataset.set",
+    help="Name of the dataset file (default: 'fnn_dataset.set')",
+)
+parser.add_argument(
+    "-o",
+    "--outputs",
+    type=str,
+    default="fnn_outputs.set",
+    help="Name of the outputs file (default: 'fnn_outputs.set')",
 )
 args = parser.parse_args()
 
@@ -55,14 +70,19 @@ if args.dataset_size <= 0:
     sys.exit(1)
 
 # Validate error_max
-if args.error_max < 0.0:
-    print("Error: Maximum error value must be non-negative.")
+if args.error_max <= 0.0:
+    print("Error: Maximum error value must be positive.")
+    sys.exit(1)
+elif args.error_max >= 0.5:
+    print("Error: Maximum error value must be less than 0.5.")
     sys.exit(1)
 
 # Open the output files
-with open("fnn_dataset.set", "w") as inputs_file, open(
-    "fnn_outputs.set", "w"
-) as outputs_file:
+print("Generating dataset of size", args.dataset_size)
+print("Writing dataset to:", args.dataset)
+print("Writing outputs to:", args.outputs)
+
+with open(args.dataset, "w") as inputs_file, open(args.outputs, "w") as outputs_file:
     for _ in range(args.dataset_size):
         # Generate a random digit (0-9)
         digit = random.randint(0, 9)
