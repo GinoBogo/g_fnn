@@ -73,6 +73,7 @@ typedef struct g_page_t {
     f_vector_t dy_dz; // dY/dZ[layer]
     f_vector_t de_dy; // dE/dY[layer]
     float      lr;    // learning rate
+    float      mse;   // mean squared error
 
     // activation function
     g_act_func_type_t af_type;
