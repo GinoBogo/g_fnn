@@ -133,6 +133,8 @@ static void training_mode(g_network_t *network, g_pages_t *pages) {
         if (data_reader_next_vector(file_outputs_set, &actual_outputs)) {
             network->Step_Errors(network, &actual_outputs);
 
+            network->Step_Adjust(network);
+
             network->Step_Backward(network);
         }
 
@@ -253,7 +255,7 @@ static void validation_mode(g_network_t *network, g_pages_t *pages) {
     float accuracy = (float)(total_samples - total_errors) / total_samples;
     printf("[INFO] Total samples   : %d\n", total_samples);
     printf("[INFO] Total errors    : %d\n", total_errors);
-    printf("[INFO] Network accuracy: %.2f%%\n", 100.0f * accuracy);
+    printf("[INFO] Network accuracy: %.1f%%\n", 100.0f * accuracy);
 }
 
 // -----------------------------------------------------------------------------

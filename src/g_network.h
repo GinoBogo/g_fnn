@@ -24,6 +24,7 @@ typedef struct g_network_t {
     void (*Init_Weights)(struct g_network_t *self, float bias);
     void (*Step_Forward)(struct g_network_t *self);
     void (*Step_Errors)(struct g_network_t *self, f_vector_t *actual_outputs);
+    void (*Step_Adjust)(struct g_network_t *self);
     void (*Step_Backward)(struct g_network_t *self);
 
     // intrinsic

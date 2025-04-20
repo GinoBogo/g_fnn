@@ -25,6 +25,7 @@ typedef struct g_layer_t {
     void (*Init_Weights)(struct g_layer_t *self, float bias);
     void (*Step_Forward)(struct g_layer_t *self);
     void (*Step_Errors)(struct g_layer_t *self, struct g_layer_t *next);
+    void (*Step_Adjust)(struct g_layer_t *self);
     void (*Step_Backward)(struct g_layer_t *self);
 
     // intrinsic

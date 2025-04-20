@@ -159,6 +159,18 @@ static void Step_Errors(struct g_network_t *self, f_vector_t *actual_outputs) {
     }
 }
 
+static void Step_Adjust(struct g_network_t *self) {
+    if ((self != NULL) && self->_is_safe) {
+        const int L = self->layers.len;
+
+        for (int k = 0; k < L; ++k) {
+            g_layer_t *layer_k = &self->layers.ptr[k];
+
+            layer_k->Step_Adjust(layer_k);
+        }
+    }
+}
+
 static void Step_Backward(struct g_network_t *self) {
     if ((self != NULL) && self->_is_safe) {
         const int L = self->layers.len;
@@ -203,6 +215,7 @@ void g_network_link(g_network_t *self) {
         self->Init_Weights  = Init_Weights;
         self->Step_Forward  = Step_Forward;
         self->Step_Errors   = Step_Errors;
+        self->Step_Adjust   = Step_Adjust;
         self->Step_Backward = Step_Backward;
     }
 }

@@ -9,7 +9,7 @@
 #include "g_layer.h"
 
 #include <assert.h> // assert
-#include <math.h>   // expf, sqrtf
+#include <math.h>   // expf, fmaxf, fminf, sqrtf
 #include <stdlib.h> // NULL, calloc, free
 
 #include "g_random.h" // g_random_range
@@ -202,6 +202,28 @@ static void Step_Errors(struct g_layer_t *self, struct g_layer_t *next) {
     }
 }
 
+static void Step_Adjust(struct g_layer_t *self) {
+    if ((self != NULL) && self->_is_safe) {
+        const int P = self->page->de_dy.len;
+
+        float mse = 0.0f;
+        for (int j = 0; j < P; ++j) {
+            float de_dy = self->page->de_dy.ptr[j];
+            mse += de_dy * de_dy;
+        }
+        mse /= P;
+
+        // adjust learning rate
+        self->page->lr += (self->page->mse > mse) ? -0.0001f : +0.0005f;
+
+        // bound learning rate
+        self->page->lr = fmaxf(0.0001f, fminf(0.1f, self->page->lr));
+
+        // update mean squared error
+        self->page->mse = mse;
+    }
+}
+
 static void Step_Backward(struct g_layer_t *self) {
     if ((self != NULL) && self->_is_safe) {
         float *dE_dy = self->page->de_dy.ptr;
@@ -237,6 +259,7 @@ void g_layer_link(g_layer_t *self) {
         self->Init_Weights  = Init_Weights;
         self->Step_Forward  = Step_Forward;
         self->Step_Errors   = Step_Errors;
+        self->Step_Adjust   = Step_Adjust;
         self->Step_Backward = Step_Backward;
     }
 }
