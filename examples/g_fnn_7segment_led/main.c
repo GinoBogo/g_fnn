@@ -87,28 +87,6 @@ static void training_mode(g_network_t *network, g_pages_t *pages) {
     actual_outputs.ptr = &OUT_YT[0];
     actual_outputs.len = SIZEOF(OUT_YT);
 
-    // load weights from file
-    file_weights_cfg = data_reader_open(fnn_weights_cfg);
-    if (file_weights_cfg == NULL) {
-        printf("[ALERT] Creating random weights file '%s'...\n", fnn_weights_cfg);
-        network->Init_Weights(network, 0.5f);
-
-        // save weights to file
-        file_weights_cfg = data_writer_open(fnn_weights_cfg);
-        if (file_weights_cfg == NULL) {
-            exit(ERR_FILE);
-        }
-
-        save_weights_to_file(file_weights_cfg, pages);
-    } else {
-        for (int k = 0; k < pages->len; ++k) {
-            if (!data_reader_next_matrix(file_weights_cfg, &pages->ptr[k].w)) {
-                network->Destroy(network);
-                exit(ERR_DATA);
-            }
-        }
-    }
-
     // load outputs from file
     file_outputs_set = data_reader_open(fnn_outputs_set);
     if (file_outputs_set == NULL) {
@@ -153,13 +131,6 @@ static void training_mode(g_network_t *network, g_pages_t *pages) {
 // -----------------------------------------------------------------------------
 
 static void inference_mode(g_network_t *network, g_pages_t *pages) {
-    // load weights from file
-    file_weights_cfg = data_reader_open(fnn_weights_cfg);
-    if (file_weights_cfg == NULL) {
-        network->Destroy(network);
-        exit(ERR_FILE);
-    }
-
     for (int k = 0; k < pages->len; ++k) {
         if (!data_reader_next_matrix(file_weights_cfg, &pages->ptr[k].w)) {
             network->Destroy(network);
@@ -189,13 +160,6 @@ static void validation_mode(g_network_t *network, g_pages_t *pages) {
     f_vector_t actual_outputs;
     actual_outputs.ptr = &OUT_YT[0];
     actual_outputs.len = SIZEOF(OUT_YT);
-
-    // load weights from file
-    file_weights_cfg = data_reader_open(fnn_weights_cfg);
-    if (file_weights_cfg == NULL) {
-        network->Destroy(network);
-        exit(ERR_FILE);
-    }
 
     for (int k = 0; k < pages->len; ++k) {
         if (!data_reader_next_matrix(file_weights_cfg, &pages->ptr[k].w)) {
@@ -408,6 +372,28 @@ int main(int argc, char *argv[]) {
     g_network_link(&network);
 
     if (network.Create(&network, &pages)) {
+        // load weights from file
+        file_weights_cfg = data_reader_open(fnn_weights_cfg);
+        if (file_weights_cfg == NULL) {
+            printf("[ALERT] Creating random weights file '%s'...\n", fnn_weights_cfg);
+            network.Init_Weights(&network, 0.5f);
+
+            // save weights to file
+            file_weights_cfg = data_writer_open(fnn_weights_cfg);
+            if (file_weights_cfg == NULL) {
+                exit(ERR_FILE);
+            }
+
+            save_weights_to_file(file_weights_cfg, &pages);
+        } else {
+            for (int k = 0; k < pages.len; ++k) {
+                if (!data_reader_next_matrix(file_weights_cfg, &pages.ptr[k].w)) {
+                    network.Destroy(&network);
+                    exit(ERR_DATA);
+                }
+            }
+        }
+
         // load dataset from file
         file_dataset_set = data_reader_open(fnn_dataset_set);
         if (file_dataset_set == NULL) {
