@@ -7,6 +7,7 @@
 // -----------------------------------------------------------------------------
 
 #include <libgen.h> // basename
+#include <math.h>   // INFINITY
 #include <stdio.h>  // FILE, NULL, fprintf, printf, puts
 #include <stdlib.h> // atexit, exit
 #include <string.h> // strcmp
@@ -185,7 +186,7 @@ static void validation_mode(g_network_t *network, g_pages_t *pages) {
     while (data_reader_next_vector(file_dataset_set, &pages->ptr[0].x)) {
         network->Step_Forward(network);
 
-        float y_max = 0.0f;
+        float y_max = -INFINITY;
         for (int i = 0; i < P; ++i) {
             if (pages->ptr[L].y.ptr[i] > y_max) {
                 y_max = pages->ptr[L].y.ptr[i];
