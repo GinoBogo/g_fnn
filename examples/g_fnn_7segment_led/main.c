@@ -217,10 +217,10 @@ static void validation_mode(g_network_t *network, g_pages_t *pages) {
         }
     }
 
-    float accuracy = (float)(total_samples - total_errors) / total_samples;
-    printf("[INFO] Total samples   : %d\n", total_samples);
-    printf("[INFO] Total errors    : %d\n", total_errors);
-    printf("[INFO] Network accuracy: %.1f%%\n", 100.0f * accuracy);
+    float accuracy = (float)(total_samples - total_errors) / (float)total_samples;
+    printf("[INFO] Total samples processed: %d\n", total_samples);
+    printf("[INFO] Total errors recognised: %d\n", total_errors);
+    printf("[INFO] Neural Network accuracy: %.1f%%\n", 100.0f * accuracy);
 }
 
 // -----------------------------------------------------------------------------
@@ -379,7 +379,7 @@ int main(int argc, char *argv[]) {
             printf("[ALERT] Creating random weights file '%s'...\n", fnn_weights_cfg);
             network.Init_Weights(&network, 0.5f);
 
-            // save weights to file
+            // save random weights to file
             file_weights_cfg = data_writer_open(fnn_weights_cfg);
             if (file_weights_cfg == NULL) {
                 exit(ERR_FILE);
