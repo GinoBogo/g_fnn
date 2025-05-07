@@ -132,13 +132,6 @@ static void training_mode(g_network_t *network, g_pages_t *pages) {
 // -----------------------------------------------------------------------------
 
 static void inference_mode(g_network_t *network, g_pages_t *pages) {
-    for (int k = 0; k < pages->len; ++k) {
-        if (!data_reader_next_matrix(file_weights_cfg, &pages->ptr[k].w)) {
-            network->Destroy(network);
-            exit(ERR_DATA);
-        }
-    }
-
     // load dataset from file
     while (data_reader_next_vector(file_dataset_set, &pages->ptr[0].x)) {
         network->Step_Forward(network);
@@ -161,13 +154,6 @@ static void validation_mode(g_network_t *network, g_pages_t *pages) {
     f_vector_t actual_outputs;
     actual_outputs.ptr = &OUT_YT[0];
     actual_outputs.len = SIZEOF(OUT_YT);
-
-    for (int k = 0; k < pages->len; ++k) {
-        if (!data_reader_next_matrix(file_weights_cfg, &pages->ptr[k].w)) {
-            network->Destroy(network);
-            exit(ERR_DATA);
-        }
-    }
 
     // load outputs from file
     file_outputs_set = data_reader_open(fnn_outputs_set);
