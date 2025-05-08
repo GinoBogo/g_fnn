@@ -117,29 +117,40 @@ static void Init_Weights(struct g_layer_t *self, float bias) {
 
         const g_act_func_type_t af_type = self->page->af_type;
 
-        for (int j = 0; j < fan_out; ++j) {
-            float *Wj = f_matrix_row(&self->page->w, j);
+        switch (af_type) {
+            case RELU:
+            case LEAKY_RELU:
+            case PRELU:
+            case SWISH:
+            case ELU: {
+                for (int j = 0; j < fan_out; ++j) {
+                    float *Wj = f_matrix_row(&self->page->w, j);
 
-            switch (af_type) {
-                case RELU:
-                case LEAKY_RELU:
-                case PRELU:
-                case SWISH:
-                case ELU:
                     __he_uniform_init(Wj, fan_in, bias);
-                    break;
+                }
+            } break;
 
-                case TANH:
-                case SIGMOID:
-                case SOFTMAX:
+            case TANH:
+            case SIGMOID:
+            case SOFTMAX: {
+                for (int j = 0; j < fan_out; ++j) {
+                    float *Wj = f_matrix_row(&self->page->w, j);
+
                     __xavier_uniform_init(Wj, fan_in, fan_out, bias);
-                    break;
-                default:
-                    for (int i = 0; i <= fan_in; ++i) {
-                        Wj[i] = 0.0f; // weights + bias
+                }
+            } break;
+
+            default: {
+                // WARNING: unsupported activation function
+                for (int j = 0; j < fan_out; ++j) {
+                    float *Wj = f_matrix_row(&self->page->w, j);
+
+                    for (int i = 0; i < fan_in; ++i) {
+                        Wj[i] = 1.0f;
                     }
-                    break;
-            }
+                    Wj[fan_in] = bias;
+                }
+            } break;
         }
     }
 }
