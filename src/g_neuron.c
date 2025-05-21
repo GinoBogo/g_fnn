@@ -99,6 +99,20 @@ static void __af_elu(g_page_t *page, int n_id) {
     *dY_dZ = *Z > 0.0f ? 1.0f : (*Y) + alpha;
 }
 
+static void __af_softplus(g_page_t *page, int n_id) {
+    float *Z = &page->z.ptr[n_id];
+    float *Y = &page->y.ptr[n_id];
+
+    const float u = expf(*Z);
+    const float v = 1.0f + u;
+
+    *Y = logf(v);
+
+    float *dY_dZ = &page->dy_dz.ptr[n_id];
+
+    *dY_dZ = u / v;
+}
+
 static void __af_sigmoid(g_page_t *page, int n_id) {
     float *Z = &page->z.ptr[n_id];
     float *Y = &page->y.ptr[n_id];
@@ -181,15 +195,16 @@ static bool Create(struct g_neuron_t *self, g_page_t *page, int n_id) {
                     rvalue = rvalue && (page->af_args.len > 0);
                 } break;
 
+                case SOFTPLUS: {
+                    page->af_call = __af_softplus;
+                } break;
+
                 case SIGMOID: {
                     page->af_call = __af_sigmoid;
                 } break;
 
                 case SOFTMAX: {
                     page->af_call = __af_softmax;
-
-                    rvalue = rvalue && (page->af_args.ptr != NULL);
-                    rvalue = rvalue && (page->af_args.len > 1);
                 } break;
 
                 default: { // fallback

@@ -74,6 +74,7 @@ ACTIVATION_FUNCTIONS = [
     "PRELU",
     "SWISH",
     "ELU",
+    "SOFTPLUS",
     "SIGMOID",
     "SOFTMAX",
 ]
@@ -87,6 +88,7 @@ AF_ARGS_INIT = {
     "PRELU":     ("{0.01f}", 1),
     "SWISH":     ("{0.01f}", 1),
     "ELU":       ("{0.01f}", 1),
+    "SOFTPLUS":  ("{0.0f}", 1),
     "SOFTMAX":   ("{0.0f, 0.0f}", 2)
 }
 

@@ -28,11 +28,14 @@ extern float *f_matrix_at(f_matrix_t *mat, int row, int col);
 
 // -----------------------------------------------------------------------------
 /*
+ * BNN  - Bayesian Neural Network
  * CNN  - Convolutional Neural Network
  * FFN  - Feed-Forward Network
- * SFFN - Shallow Feed-Forward Network
- * RNN  - Recurrent Neural Network
+ * GAN  - Generative Adversarial Network
  * LSTM - Long Short-Term Memory (networks)
+ * RNN  - Recurrent Neural Network
+ * SFFN - Shallow Feed-Forward Network
+ * VAE  - Variational Autoencoder
  */
 
 typedef enum g_act_func_type_t {
@@ -43,6 +46,7 @@ typedef enum g_act_func_type_t {
     PRELU,      // for hidden layers (Deep FFN, CNN)
     SWISH,      // for hidden layers (Deep FFN, CNN)
     ELU,        // for hidden layers (Deep FFN, CNN)
+    SOFTPLUS,   // for hidden layers (BNN, GAN, VAE)
     SIGMOID,    // for output layer (binary classification)
     SOFTMAX,    // for output layer (multi-class classification)
     UNKNOWN = -1
